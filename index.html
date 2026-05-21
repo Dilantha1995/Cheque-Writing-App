@@ -318,7 +318,40 @@
   .pill-inr { background: rgba(255,85,119,0.15); color: var(--danger); }
   .register-empty { padding: 60px 20px; text-align: center; color: var(--ink-dim); font-style: italic; }
 
-  /* PAYEE COMBO BOX */
+  /* FONT SIZE CONTROLS */
+  input[type="range"] {
+    width: 100%; height: 4px; background: var(--panel-3); border-radius: 4px;
+    outline: none; -webkit-appearance: none; appearance: none; padding: 0;
+    cursor: pointer; margin: 6px 0;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--accent); border: 2px solid var(--bg);
+    cursor: pointer;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--accent); border: 2px solid var(--bg);
+    cursor: pointer;
+  }
+  .font-row {
+    display: grid; grid-template-columns: 1fr 60px; gap: 10px; align-items: center;
+    padding: 6px 0; border-bottom: 1px solid var(--border);
+  }
+  .font-row:last-child { border-bottom: none; }
+  .font-row-label { font-size: 11px; color: var(--ink-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+  .font-row-slider input[type="range"] { margin: 0; }
+  .font-row-value {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    background: var(--panel-2); padding: 4px 6px; border-radius: 4px;
+    text-align: center; color: var(--accent);
+  }
+  .font-value {
+    float: right; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    background: var(--panel-2); padding: 2px 6px; border-radius: 4px;
+    color: var(--accent); font-weight: 500;
+  }
   .payee-combo { position: relative; display: flex; gap: 6px; }
   .payee-combo input { flex: 1; }
   .payee-save-btn {
@@ -612,6 +645,14 @@
           <span>Print Dhivehi line on cheque (MVR only)</span>
         </label>
       </div>
+      <div class="toggle-switch" style="margin-top: 8px;">
+        <input type="checkbox" id="show-currency-prefix" onchange="updateFields()">
+        <label for="show-currency-prefix">
+          <span class="switch"></span>
+          <span>Print currency code before amount (e.g. "MVR 1,000")</span>
+        </label>
+      </div>
+      <p class="helper-text">Most pre-printed cheques already show the currency — keep this OFF when printing on real cheques. Turn ON if printing on plain paper or for templates without currency.</p>
     </div>
 
     <!-- Layout -->
@@ -635,6 +676,26 @@
       <div class="btn-group" style="margin-top: 10px;">
         <button class="btn btn-sm btn-ghost" onclick="resetPositions()">↺ Reset</button>
         <button class="btn btn-sm btn-ghost" onclick="savePositions()">💾 Save Positions</button>
+      </div>
+    </div>
+
+    <!-- Font Sizes -->
+    <div class="section">
+      <h2 class="section-title">
+        <span style="flex:1">Font Sizes</span>
+        <button class="btn btn-sm btn-ghost" onclick="toggleFontPanel()" id="font-toggle-btn" style="padding: 2px 8px; font-size: 11px;">▼ Show</button>
+      </h2>
+      <div id="font-sizes-panel" style="display: none;">
+        <div class="field">
+          <label class="field-label">Scale All Fields <span class="font-value" id="scale-value">100%</span></label>
+          <input type="range" id="font-scale" min="50" max="200" value="100" step="5" oninput="onFontScaleChange()">
+          <p class="helper-text">Quick multiplier — scales every field's font size at once.</p>
+        </div>
+        <div id="font-size-controls"></div>
+        <div class="btn-group" style="margin-top: 12px;">
+          <button class="btn btn-sm btn-ghost" onclick="resetFontSizes()">↺ Reset</button>
+          <button class="btn btn-sm btn-ghost" onclick="saveFontSizes()">💾 Save Sizes</button>
+        </div>
       </div>
     </div>
 
@@ -710,7 +771,7 @@
 
         <div class="field-box field-amount" data-field="amount" style="top: 33mm; left: 138mm;">
           <span class="label-tag">Amount (figures)</span>
-          <span class="currency-tag" id="f-currency-tag">MVR</span>
+          <span class="currency-tag" id="f-currency-tag" style="display:none;">MVR</span>
           <span class="field-content" id="f-amount">0.00</span>
         </div>
 
@@ -1122,6 +1183,135 @@ function persistPositions(bank, pos) {
     localStorage.setItem('cheque-positions', JSON.stringify(stored));
   } catch (e) {}
 }
+
+/* ============================================================
+   FONT SIZE MANAGEMENT
+   Per-bank, per-field font sizes in pt. Plus global scale.
+   ============================================================ */
+const DEFAULT_FONT_SIZES = {
+  date:     11,
+  payee:    11,
+  words1:   10,
+  words2:   10,
+  wordsdv:  11,
+  amount:   12,
+  acpayee:   7,
+  memo:      9,
+};
+
+const FIELD_LABELS = {
+  date:    'Date',
+  payee:   'Payee Name',
+  words1:  'Amount in Words (line 1)',
+  words2:  'Amount in Words (line 2)',
+  wordsdv: 'Amount in Dhivehi',
+  amount:  'Amount (figures)',
+  acpayee: 'Crossing / Stamp',
+  memo:    'Memo / For',
+};
+
+let fontSizes = { ...DEFAULT_FONT_SIZES };
+let fontScale = 100;
+
+function loadFontSizes(bank) {
+  try {
+    const stored = JSON.parse(localStorage.getItem('cheque-fonts') || '{}');
+    const data = stored[bank] || {};
+    return {
+      sizes: { ...DEFAULT_FONT_SIZES, ...(data.sizes || {}) },
+      scale: data.scale || 100,
+    };
+  } catch (e) { return { sizes: { ...DEFAULT_FONT_SIZES }, scale: 100 }; }
+}
+
+function persistFontSizes(bank) {
+  try {
+    const stored = JSON.parse(localStorage.getItem('cheque-fonts') || '{}');
+    stored[bank] = { sizes: fontSizes, scale: fontScale };
+    localStorage.setItem('cheque-fonts', JSON.stringify(stored));
+  } catch (e) {}
+}
+
+function applyFontSizes() {
+  Object.entries(fontSizes).forEach(([field, size]) => {
+    const el = document.querySelector(`[data-field="${field}"]`);
+    if (!el) return;
+    const scaled = (size * fontScale / 100).toFixed(1);
+    el.style.fontSize = scaled + 'pt';
+  });
+}
+
+function renderFontControls() {
+  const container = document.getElementById('font-size-controls');
+  if (!container) return;
+  container.innerHTML = Object.keys(DEFAULT_FONT_SIZES).map(field => `
+    <div class="font-row">
+      <div>
+        <div class="font-row-label">${FIELD_LABELS[field]}</div>
+        <div class="font-row-slider">
+          <input type="range" min="5" max="24" step="0.5" value="${fontSizes[field]}"
+                 data-field="${field}" oninput="onFontSizeChange(this)">
+        </div>
+      </div>
+      <div class="font-row-value" id="font-val-${field}">${fontSizes[field]}pt</div>
+    </div>
+  `).join('');
+}
+
+function onFontSizeChange(input) {
+  const field = input.dataset.field;
+  fontSizes[field] = parseFloat(input.value);
+  document.getElementById('font-val-' + field).textContent = fontSizes[field] + 'pt';
+  applyFontSizes();
+}
+
+function onFontScaleChange() {
+  fontScale = parseInt(document.getElementById('font-scale').value, 10);
+  document.getElementById('scale-value').textContent = fontScale + '%';
+  applyFontSizes();
+}
+
+function toggleFontPanel() {
+  const panel = document.getElementById('font-sizes-panel');
+  const btn = document.getElementById('font-toggle-btn');
+  if (panel.style.display === 'none') {
+    panel.style.display = 'block';
+    btn.textContent = '▲ Hide';
+  } else {
+    panel.style.display = 'none';
+    btn.textContent = '▼ Show';
+  }
+}
+
+function resetFontSizes() {
+  if (!confirm('Reset all font sizes to defaults for this bank?')) return;
+  fontSizes = { ...DEFAULT_FONT_SIZES };
+  fontScale = 100;
+  document.getElementById('font-scale').value = 100;
+  document.getElementById('scale-value').textContent = '100%';
+  renderFontControls();
+  applyFontSizes();
+  const bank = document.getElementById('bank').value;
+  persistFontSizes(bank);
+  toast('Font sizes reset for ' + BANKS[bank].short);
+}
+
+function saveFontSizes() {
+  const bank = document.getElementById('bank').value;
+  persistFontSizes(bank);
+  toast('Font sizes saved for ' + BANKS[bank].short);
+}
+
+function initFontSizesForBank(bank) {
+  const data = loadFontSizes(bank);
+  fontSizes = data.sizes;
+  fontScale = data.scale;
+  document.getElementById('font-scale').value = fontScale;
+  document.getElementById('scale-value').textContent = fontScale + '%';
+  renderFontControls();
+  applyFontSizes();
+}
+
 function loadRegister() {
   try { return JSON.parse(localStorage.getItem('cheque-register') || '[]'); }
   catch (e) { return []; }
@@ -1208,7 +1398,10 @@ function updateFields() {
   // Fields
   document.getElementById('f-payee').textContent = payee;
   document.getElementById('f-amount').textContent = formatAmount(amount, currency);
-  document.getElementById('f-currency-tag').textContent = CURRENCIES[currency].code;
+  const currencyTag = document.getElementById('f-currency-tag');
+  const showCurrencyPrefix = document.getElementById('show-currency-prefix').checked;
+  currencyTag.textContent = CURRENCIES[currency].code;
+  currencyTag.style.display = showCurrencyPrefix ? 'inline' : 'none';
   document.getElementById('f-memo').textContent = memo ? 'For: ' + memo : '';
 
   // Date — handle undated
@@ -1390,6 +1583,7 @@ function loadCrossingChoice(bank) {
 function onBankChange() {
   const bank = document.getElementById('bank').value;
   applyPositions();
+  initFontSizesForBank(bank);
   loadCrossingChoice(bank);
   onCrossingToggle(); // sync UI opacity
   updateFields();
@@ -2162,6 +2356,7 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('date').value = new Date().toISOString().split('T')[0];
   document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
   applyPositions();
+  initFontSizesForBank(document.getElementById('bank').value);
   loadCrossingChoice(document.getElementById('bank').value);
   onCrossingToggle();
   setupDragHandlers();
