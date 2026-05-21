@@ -223,7 +223,26 @@
   }
   .field-account-payee .ac-stamp {
     border: 1.5px solid currentColor; padding: 1mm 2mm; border-radius: 1mm;
-    transform: rotate(-12deg); display: inline-block;
+    display: inline-block; text-align: center; line-height: 1.2;
+  }
+  .field-account-payee.style-stamp-rotated .ac-stamp {
+    transform: rotate(-12deg);
+  }
+  .field-account-payee.style-parallel-lines .ac-stamp {
+    border: none; padding: 1mm 0;
+    border-top: 1.2pt solid currentColor;
+    border-bottom: 1.2pt solid currentColor;
+    border-radius: 0;
+    padding-left: 3mm; padding-right: 3mm;
+  }
+  .field-account-payee.style-plain .ac-stamp {
+    border: none; padding: 0; font-style: italic;
+  }
+  .field-account-payee.pos-across-top {
+    width: 80mm; transform-origin: left top;
+  }
+  .field-account-payee.pos-across-payee .ac-stamp {
+    font-size: 8pt;
   }
 
   .cheque-lines {
@@ -299,7 +318,59 @@
   .pill-inr { background: rgba(255,85,119,0.15); color: var(--danger); }
   .register-empty { padding: 60px 20px; text-align: center; color: var(--ink-dim); font-style: italic; }
 
-  /* TOAST & MODAL */
+  /* PAYEE COMBO BOX */
+  .payee-combo { position: relative; display: flex; gap: 6px; }
+  .payee-combo input { flex: 1; }
+  .payee-save-btn {
+    width: 36px; flex-shrink: 0;
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--accent); font-size: 18px; font-weight: 700;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .payee-save-btn:hover { background: var(--accent); color: #0e1116; border-color: var(--accent); }
+  .payee-suggestions {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 42px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+    box-shadow: var(--shadow);
+    max-height: 240px; overflow-y: auto;
+    z-index: 20; display: none;
+  }
+  .payee-suggestions.show { display: block; }
+  .payee-suggestion {
+    padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+  .payee-suggestion:last-child { border-bottom: none; }
+  .payee-suggestion:hover, .payee-suggestion.highlighted { background: var(--panel-2); }
+  .payee-suggestion .ps-name { font-weight: 600; font-size: 13px; color: var(--ink); }
+  .payee-suggestion .ps-meta { font-size: 11px; color: var(--ink-dim); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+  .payee-suggestion-empty { padding: 12px; color: var(--ink-dim); font-style: italic; font-size: 12px; text-align: center; }
+
+  /* PAYEE STATUS HINT */
+  #payee-status { color: var(--ink-dim); }
+  #payee-status.is-saved { color: var(--accent); }
+  #payee-status.is-new { color: var(--accent-2); }
+
+  /* PAYEES TAB */
+  .payees-container { width: 100%; max-width: 1100px; margin: 0 auto; }
+  .payees-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;
+  }
+  .payee-card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 18px; transition: all 0.15s;
+  }
+  .payee-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .payee-card .pc-name { font-family: 'Fraunces', serif; font-weight: 700; font-size: 18px; margin-bottom: 4px; }
+  .payee-card .pc-meta { font-size: 12px; color: var(--ink-dim); font-family: 'JetBrains Mono', monospace; margin-bottom: 6px; }
+  .payee-card .pc-bank { display: inline-block; padding: 2px 8px; border-radius: 12px; background: var(--panel-3); font-size: 10px; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .payee-card .pc-notes { font-size: 12px; color: var(--ink-dim); line-height: 1.5; margin: 6px 0 10px; min-height: 18px; }
+  .payee-card .pc-stats { font-size: 11px; color: var(--ink-dim); margin-bottom: 12px; padding-top: 8px; border-top: 1px dashed var(--border); }
+  .payee-card .pc-actions { display: flex; gap: 6px; }
+
+  /* PAYEE FORM MODAL */
+  .modal-form .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .modal-form .field { margin-bottom: 12px; }
   .toast {
     position: fixed; bottom: 24px; right: 24px; background: var(--panel-2);
     border: 1px solid var(--accent); border-radius: 10px;
@@ -343,7 +414,7 @@
     @page { size: 178mm 84mm; margin: 0; }
     html, body { background: white !important; }
     header.app-header, aside.sidebar, .preview-controls, .field-box .label-tag,
-    .cheque-lines, .toast, .modal-backdrop, #register-view {
+    .cheque-lines, .toast, .modal-backdrop, #register-view, #payees-view {
       display: none !important;
     }
     main.preview-area { padding: 0 !important; }
@@ -383,6 +454,7 @@
   </div>
   <div class="tabs" id="tabs">
     <button class="tab active" data-tab="printer">🖋 Printer</button>
+    <button class="tab" data-tab="payees">👥 Payees</button>
     <button class="tab" data-tab="register">📋 Register</button>
   </div>
   <div class="header-actions">
@@ -410,15 +482,34 @@
           <input type="date" id="date" oninput="updateFields()">
         </div>
       </div>
+      <div class="toggle-switch" style="margin-top: 4px;">
+        <input type="checkbox" id="undated" onchange="onUndatedToggle()">
+        <label for="undated">
+          <span class="switch"></span>
+          <span>Leave undated (print blank or custom)</span>
+        </label>
+      </div>
+      <div class="field" id="undated-text-field" style="display:none; margin-top: 10px;">
+        <label class="field-label" for="undated-text">Date Line Text (when undated)</label>
+        <select id="undated-text" onchange="onUndatedTextChange()" style="margin-bottom: 6px;">
+          <option value="">— Leave completely blank —</option>
+          <option value="__ / __ / ____">__ / __ / ____</option>
+          <option value="DATE: __________">DATE: __________</option>
+          <option value="custom">Custom text…</option>
+        </select>
+        <input type="text" id="undated-custom" placeholder="Custom date line text" oninput="updateFields()" style="display:none;">
+      </div>
       <div class="field">
         <label class="field-label" for="bank">Bank</label>
         <select id="bank" onchange="onBankChange()">
           <option value="BML">Bank of Maldives (BML)</option>
           <option value="MIB">Maldives Islamic Bank (MIB)</option>
+          <option value="CBM">Commercial Bank of Maldives (CBM)</option>
           <option value="BOC">Bank of Ceylon (BOC) — Malé</option>
           <option value="MCB">Mauritius Commercial Bank (MCB) — Maldives</option>
           <option value="SBI">State Bank of India (SBI) — Malé</option>
           <option value="HDFC">HDFC Bank — Maldives</option>
+          <option value="HBL">Habib Bank Limited (HBL) — Malé</option>
           <option value="HSBC">HSBC — Maldives</option>
           <option value="CUSTOM">Custom / Other</option>
         </select>
@@ -446,7 +537,12 @@
       <h2 class="section-title">Pay To</h2>
       <div class="field">
         <label class="field-label" for="payee">Payee Name</label>
-        <input type="text" id="payee" placeholder="John Doe" oninput="updateFields()">
+        <div class="payee-combo">
+          <input type="text" id="payee" placeholder="Type or pick a saved payee" oninput="onPayeeInput()" onfocus="showPayeeSuggestions()" onblur="hidePayeeSuggestions()" autocomplete="off">
+          <button type="button" class="payee-save-btn" onclick="quickSavePayee()" title="Save this payee to the register">⊕</button>
+          <div class="payee-suggestions" id="payee-suggestions"></div>
+        </div>
+        <p class="helper-text" id="payee-status"></p>
       </div>
       <div class="field">
         <label class="field-label" for="amount">Amount (figures)</label>
@@ -464,13 +560,52 @@
         <input type="text" id="memo" placeholder="Invoice #1234" oninput="updateFields()">
       </div>
       <div class="toggle-switch">
-        <input type="checkbox" id="account-payee" checked onchange="updateFields()">
-        <label for="account-payee">
+        <input type="checkbox" id="crossing-on" checked onchange="onCrossingToggle()">
+        <label for="crossing-on">
           <span class="switch"></span>
-          <span>Mark "A/C Payee Only"</span>
+          <span>Print crossing / restrictive endorsement</span>
         </label>
       </div>
-      <div class="toggle-switch" style="margin-top: 8px;">
+      <div id="crossing-options" style="margin-top: 10px;">
+        <div class="field">
+          <label class="field-label" for="crossing-preset">Crossing Preset</label>
+          <select id="crossing-preset" onchange="onCrossingPresetChange()">
+            <option value="ac-payee">A/C Payee Only</option>
+            <option value="ac-payee-not-neg">A/C Payee Only · Not Negotiable</option>
+            <option value="not-neg">Not Negotiable</option>
+            <option value="and-co">& Co.</option>
+            <option value="payees-ac">Payee's A/C Only</option>
+            <option value="custom">✏️ Custom text…</option>
+          </select>
+        </div>
+        <div class="field" id="crossing-custom-field" style="display:none;">
+          <label class="field-label" for="crossing-custom">Custom Crossing Text</label>
+          <textarea id="crossing-custom" rows="2" placeholder="Enter custom crossing text (line breaks supported)" oninput="updateFields()"></textarea>
+          <p class="helper-text">Tip: Use a line break for two-line stamps. Keep short — long text won't fit on the cheque.</p>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label class="field-label" for="crossing-style">Style</label>
+            <select id="crossing-style" onchange="updateFields()">
+              <option value="stamp">Boxed Stamp</option>
+              <option value="stamp-rotated">Rotated Stamp (-12°)</option>
+              <option value="parallel-lines">Parallel Lines (// text //)</option>
+              <option value="plain">Plain Text</option>
+            </select>
+          </div>
+          <div class="field">
+            <label class="field-label" for="crossing-position">Position</label>
+            <select id="crossing-position" onchange="onCrossingPositionChange()">
+              <option value="top-left">Top-Left Corner</option>
+              <option value="across-top">Across Top</option>
+              <option value="across-payee">Across Payee Line</option>
+              <option value="bottom-left">Bottom-Left</option>
+              <option value="custom-drag">Custom (drag in Edit Mode)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="toggle-switch" style="margin-top: 12px;">
         <input type="checkbox" id="show-dhivehi" checked onchange="updateFields()">
         <label for="show-dhivehi">
           <span class="switch"></span>
@@ -580,7 +715,7 @@
         </div>
 
         <div class="field-box field-account-payee" data-field="acpayee" style="top: 14mm; left: 2mm;">
-          <span class="label-tag">A/C Payee Stamp</span>
+          <span class="label-tag">Crossing</span>
           <span class="ac-stamp" id="f-acpayee">A/C PAYEE<br>ONLY</span>
         </div>
 
@@ -605,6 +740,99 @@
   </main>
 </div>
 
+<!-- PAYEES TAB -->
+<div id="payees-view" style="display: none; padding: 28px;">
+  <div class="payees-container">
+
+    <div class="register-stats" id="payees-stats" style="margin-bottom: 20px;"></div>
+
+    <div class="register-controls">
+      <input type="text" class="register-search" id="payee-search" placeholder="🔍 Search payees by name, account, or notes..." oninput="renderPayees()">
+      <select id="payee-filter-bank" onchange="renderPayees()" style="width: auto;">
+        <option value="">All Banks</option>
+        <option value="BML">BML</option>
+        <option value="MIB">MIB</option>
+        <option value="CBM">CBM</option>
+        <option value="BOC">BOC</option>
+        <option value="MCB">MCB</option>
+        <option value="SBI">SBI</option>
+        <option value="HDFC">HDFC</option>
+        <option value="HBL">HBL</option>
+        <option value="HSBC">HSBC</option>
+        <option value="CUSTOM">Custom</option>
+      </select>
+      <button class="btn btn-primary" onclick="openPayeeForm()">＋ Add Payee</button>
+      <button class="btn" onclick="exportPayeesCSV()">📥 Export CSV</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('payees-import').click()">📤 Import CSV</button>
+      <input type="file" id="payees-import" accept=".csv" style="display:none" onchange="importPayeesCSV(event)">
+    </div>
+
+    <div class="payees-grid" id="payees-grid">
+      <div class="register-empty" style="grid-column: 1 / -1;">No payees saved yet. Click "Add Payee" or save one directly while printing a cheque.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PAYEE FORM MODAL -->
+<div class="modal-backdrop" id="payee-form-modal">
+  <div class="modal modal-form">
+    <h3 id="payee-form-title">Add Payee</h3>
+    <input type="hidden" id="payee-form-id">
+    <div class="field">
+      <label class="field-label" for="payee-form-name">Payee Name *</label>
+      <input type="text" id="payee-form-name" placeholder="John Doe / ABC Pvt Ltd">
+    </div>
+    <div class="row-2">
+      <div class="field">
+        <label class="field-label" for="payee-form-account">Account Number (optional)</label>
+        <input type="text" id="payee-form-account" placeholder="7730000123456">
+      </div>
+      <div class="field">
+        <label class="field-label" for="payee-form-bank">Default Bank (optional)</label>
+        <select id="payee-form-bank">
+          <option value="">— None —</option>
+          <option value="BML">Bank of Maldives (BML)</option>
+          <option value="MIB">Maldives Islamic Bank (MIB)</option>
+          <option value="CBM">Commercial Bank of Maldives (CBM)</option>
+          <option value="BOC">Bank of Ceylon (BOC)</option>
+          <option value="MCB">Mauritius Commercial Bank (MCB)</option>
+          <option value="SBI">State Bank of India (SBI)</option>
+          <option value="HDFC">HDFC Bank</option>
+          <option value="HBL">Habib Bank Limited (HBL)</option>
+          <option value="HSBC">HSBC</option>
+          <option value="CUSTOM">Custom / Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="row-2">
+      <div class="field">
+        <label class="field-label" for="payee-form-currency">Default Currency (optional)</label>
+        <select id="payee-form-currency">
+          <option value="">— None —</option>
+          <option value="MVR">MVR — Rufiyaa</option>
+          <option value="USD">USD — Dollar</option>
+          <option value="INR">INR — Rupee</option>
+          <option value="EUR">EUR — Euro</option>
+          <option value="GBP">GBP — Pound</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label" for="payee-form-category">Category (optional)</label>
+        <input type="text" id="payee-form-category" placeholder="e.g. Supplier, Staff, Utility">
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label" for="payee-form-notes">Notes (optional)</label>
+      <textarea id="payee-form-notes" rows="2" placeholder="Any reference info — phone, email, contract reference…"></textarea>
+    </div>
+    <div class="btn-group" style="margin-top: 18px; justify-content: flex-end;">
+      <button class="btn btn-ghost" onclick="closePayeeForm()">Cancel</button>
+      <button class="btn btn-primary" onclick="savePayeeForm()">💾 Save Payee</button>
+    </div>
+  </div>
+</div>
+
 <!-- REGISTER TAB -->
 <div id="register-view" style="display: none; padding: 28px; max-width: 1200px; margin: 0 auto;">
   <div class="register-container">
@@ -617,10 +845,12 @@
         <option value="">All Banks</option>
         <option value="BML">BML</option>
         <option value="MIB">MIB</option>
+        <option value="CBM">CBM</option>
         <option value="BOC">BOC</option>
         <option value="MCB">MCB</option>
         <option value="SBI">SBI</option>
         <option value="HDFC">HDFC</option>
+        <option value="HBL">HBL</option>
         <option value="HSBC">HSBC</option>
         <option value="CUSTOM">Custom</option>
       </select>
@@ -680,8 +910,15 @@
       <li>Open the <strong>Register</strong> tab to search, filter by bank/currency, and export to CSV for your accounts.</li>
       <li>All data is stored locally in your browser. Export regularly as backup.</li>
     </ol>
+    <h4 style="margin: 16px 0 6px; font-size: 14px; color: var(--accent);">Payee register</h4>
+    <p style="font-size: 13px; color: var(--ink-dim); line-height: 1.6;">Save frequent payees once. While printing, type a name and pick from the suggestions — bank and currency auto-fill from the saved payee's defaults. Click <strong>⊕</strong> next to the payee field to save a new one. Manage all payees in the <strong>Payees</strong> tab — add, edit, delete, import/export CSV. Use the CSV import to bulk-load payees from your existing spreadsheet (required column: <code>Name</code>; optional: <code>Account Number, Default Bank, Default Currency, Category, Notes</code>).</p>
+
     <h4 style="margin: 16px 0 6px; font-size: 14px; color: var(--accent);">Bilingual amounts</h4>
     <p style="font-size: 13px; color: var(--ink-dim); line-height: 1.6;">For MVR, the Dhivehi (Thaana) amount is generated automatically using the standard Sofwath/NumberToThaana vocabulary. Toggle <em>Print Dhivehi line on cheque</em> to include it in the printed output.</p>
+    <h4 style="margin: 16px 0 6px; font-size: 14px; color: var(--accent);">Undated cheques</h4>
+    <p style="font-size: 13px; color: var(--ink-dim); line-height: 1.6;">Toggle <em>Leave undated</em> to skip the date. Choose to leave the date line completely blank, print a placeholder like <code>__ / __ / ____</code>, or write your own custom text.</p>
+    <h4 style="margin: 16px 0 6px; font-size: 14px; color: var(--accent);">Crossing / endorsement</h4>
+    <p style="font-size: 13px; color: var(--ink-dim); line-height: 1.6;">Pick from presets (A/C Payee Only, Not Negotiable, &amp; Co., etc.) or write your own. Choose a stamp style (boxed, rotated, parallel lines, plain) and position (corner, across top, across payee line, bottom). Your choice is saved per bank.</p>
     <div class="btn-group" style="margin-top: 20px; justify-content: flex-end;">
       <button class="btn btn-primary" onclick="closeHelp()">Got it</button>
     </div>
@@ -844,10 +1081,12 @@ function amountToDhivehi(amount) {
 const BANKS = {
   BML:    { name: 'Bank of Maldives',          short: 'BML',  color: '#c8102e', tagline: 'My Bank · My Country',           address: 'Boduthakurufaanu Magu, Malé 20094' },
   MIB:    { name: 'Maldives Islamic Bank',     short: 'MIB',  color: '#0a6e3d', tagline: 'Shariah-Compliant Banking',       address: 'Chandhanee Magu, Malé 20156' },
+  CBM:    { name: 'Commercial Bank of Maldives', short: 'CBM', color: '#f58220', tagline: 'Your Partner in Progress',       address: 'H. Gadhamoo 2, Boduthakurufaanu Magu, Malé' },
   BOC:    { name: 'Bank of Ceylon',             short: 'BOC',  color: '#003580', tagline: 'Bankers to the Nation',           address: 'STO Trade Centre, Malé' },
   MCB:    { name: 'Mauritius Commercial Bank', short: 'MCB',  color: '#003c71', tagline: 'Success Beyond Numbers',          address: 'H. Sifa Building, Malé' },
   SBI:    { name: 'State Bank of India',       short: 'SBI',  color: '#22409a', tagline: 'The Banker to Every Indian',      address: 'H. Sea Coast, Boduthakurufaanu Magu, Malé' },
   HDFC:   { name: 'HDFC Bank',                  short: 'HDFC', color: '#004b8d', tagline: 'We understand your world',        address: 'Malé Branch' },
+  HBL:    { name: 'Habib Bank Limited',         short: 'HBL',  color: '#00723e', tagline: 'Enabling People to Advance',      address: 'H. Fasmeeru, Boduthakurufaanu Magu, Malé' },
   HSBC:   { name: 'HSBC',                       short: 'HSBC', color: '#db0011', tagline: 'The World’s Local Bank',          address: 'Malé Branch' },
   CUSTOM: { name: 'Bank Name',                  short: 'BANK', color: '#1a2742', tagline: 'Custom Bank',                     address: 'Address Line' },
 };
@@ -945,8 +1184,9 @@ function updateFields() {
   const chequeNo = document.getElementById('cheque-no').value;
   const memo = document.getElementById('memo').value;
   const showTemplate = document.getElementById('show-template').checked;
-  const acPayee = document.getElementById('account-payee').checked;
   const showDhivehi = document.getElementById('show-dhivehi').checked;
+  const undated = document.getElementById('undated').checked;
+  const crossingOn = document.getElementById('crossing-on').checked;
 
   // Bank visuals
   const b = BANKS[bank];
@@ -967,10 +1207,26 @@ function updateFields() {
 
   // Fields
   document.getElementById('f-payee').textContent = payee;
-  document.getElementById('f-date').textContent = formatDate(date);
   document.getElementById('f-amount').textContent = formatAmount(amount, currency);
   document.getElementById('f-currency-tag').textContent = CURRENCIES[currency].code;
   document.getElementById('f-memo').textContent = memo ? 'For: ' + memo : '';
+
+  // Date — handle undated
+  const dateEl = document.getElementById('f-date');
+  if (undated) {
+    const undatedChoice = document.getElementById('undated-text').value;
+    if (undatedChoice === 'custom') {
+      dateEl.textContent = document.getElementById('undated-custom').value || '';
+    } else {
+      dateEl.textContent = undatedChoice; // empty string for blank
+    }
+    // Hide the field entirely if completely blank so it doesn't show a placeholder
+    document.querySelector('[data-field="date"]').style.visibility =
+      dateEl.textContent.trim() === '' ? 'hidden' : 'visible';
+  } else {
+    dateEl.textContent = formatDate(date);
+    document.querySelector('[data-field="date"]').style.visibility = 'visible';
+  }
 
   // English words
   const words = amountToWords(amount, currency);
@@ -993,12 +1249,143 @@ function updateFields() {
       : '');
   document.getElementById('dhivehi-hint').style.display = currency === 'MVR' ? 'block' : 'none';
 
-  // A/C Payee
-  document.querySelector('[data-field="acpayee"]').style.display = acPayee ? 'flex' : 'none';
+  // Crossing
+  applyCrossing(crossingOn);
+}
+
+/* ============================================================
+   UNDATED & CROSSING HANDLERS
+   ============================================================ */
+function onUndatedToggle() {
+  const undated = document.getElementById('undated').checked;
+  document.getElementById('undated-text-field').style.display = undated ? 'block' : 'none';
+  document.getElementById('date').disabled = undated;
+  document.getElementById('date').style.opacity = undated ? '0.5' : '1';
+  // When toggling on, default to a sensible choice
+  if (undated && !document.getElementById('undated-text').value) {
+    document.getElementById('undated-text').value = '';
+  }
+  updateFields();
+}
+
+function onUndatedTextChange() {
+  const choice = document.getElementById('undated-text').value;
+  document.getElementById('undated-custom').style.display = choice === 'custom' ? 'block' : 'none';
+  updateFields();
+}
+
+function onCrossingToggle() {
+  const on = document.getElementById('crossing-on').checked;
+  document.getElementById('crossing-options').style.opacity = on ? '1' : '0.4';
+  document.getElementById('crossing-options').style.pointerEvents = on ? 'auto' : 'none';
+  updateFields();
+}
+
+function onCrossingPresetChange() {
+  const preset = document.getElementById('crossing-preset').value;
+  document.getElementById('crossing-custom-field').style.display = preset === 'custom' ? 'block' : 'none';
+  // Persist per-bank crossing choice
+  persistCrossingChoice();
+  updateFields();
+}
+
+function onCrossingPositionChange() {
+  const pos = document.getElementById('crossing-position').value;
+  const box = document.querySelector('[data-field="acpayee"]');
+  // Predefined positions (mm)
+  const positionMap = {
+    'top-left':       { top: 14, left: 2 },
+    'across-top':     { top: 18, left: 25 },
+    'across-payee':   { top: 22, left: 75 },
+    'bottom-left':    { top: 72, left: 4 },
+  };
+  if (positionMap[pos]) {
+    box.style.top = positionMap[pos].top + 'mm';
+    box.style.left = positionMap[pos].left + 'mm';
+    positions.acpayee = positionMap[pos];
+  }
+  // 'custom-drag' leaves position alone — user moves it via edit mode
+  persistCrossingChoice();
+  updateFields();
+}
+
+function getCrossingText() {
+  const preset = document.getElementById('crossing-preset').value;
+  if (preset === 'custom') {
+    return document.getElementById('crossing-custom').value;
+  }
+  const presetMap = {
+    'ac-payee':         'A/C PAYEE ONLY',
+    'ac-payee-not-neg': 'A/C PAYEE ONLY\nNOT NEGOTIABLE',
+    'not-neg':          'NOT NEGOTIABLE',
+    'and-co':           '& CO.',
+    'payees-ac':        "PAYEE'S A/C ONLY",
+  };
+  return presetMap[preset] || 'A/C PAYEE ONLY';
+}
+
+function applyCrossing(on) {
+  const box = document.querySelector('[data-field="acpayee"]');
+  if (!on) { box.style.display = 'none'; return; }
+  box.style.display = 'flex';
+
+  const text = getCrossingText();
+  const style = document.getElementById('crossing-style').value;
+  const stampEl = document.getElementById('f-acpayee');
+
+  // Apply style class
+  box.classList.remove('style-stamp', 'style-stamp-rotated', 'style-parallel-lines', 'style-plain');
+  box.classList.add('style-' + style);
+
+  // Apply position class for layout-specific tweaks
+  const pos = document.getElementById('crossing-position').value;
+  box.classList.remove('pos-top-left', 'pos-across-top', 'pos-across-payee', 'pos-bottom-left', 'pos-custom-drag');
+  box.classList.add('pos-' + pos);
+
+  if (style === 'parallel-lines') {
+    // text between two horizontal lines
+    stampEl.innerHTML = text.split('\n').map(l => escapeHTML(l)).join('<br>');
+  } else if (style === 'plain') {
+    stampEl.innerHTML = text.split('\n').map(l => escapeHTML(l)).join('<br>');
+  } else {
+    stampEl.innerHTML = text.split('\n').map(l => escapeHTML(l)).join('<br>');
+  }
+}
+
+function persistCrossingChoice() {
+  const bank = document.getElementById('bank').value;
+  try {
+    const stored = JSON.parse(localStorage.getItem('cheque-crossings') || '{}');
+    stored[bank] = {
+      preset:   document.getElementById('crossing-preset').value,
+      custom:   document.getElementById('crossing-custom').value,
+      style:    document.getElementById('crossing-style').value,
+      position: document.getElementById('crossing-position').value,
+      on:       document.getElementById('crossing-on').checked,
+    };
+    localStorage.setItem('cheque-crossings', JSON.stringify(stored));
+  } catch (e) {}
+}
+
+function loadCrossingChoice(bank) {
+  try {
+    const stored = JSON.parse(localStorage.getItem('cheque-crossings') || '{}');
+    const c = stored[bank];
+    if (!c) return;
+    document.getElementById('crossing-preset').value = c.preset || 'ac-payee';
+    document.getElementById('crossing-custom').value = c.custom || '';
+    document.getElementById('crossing-style').value = c.style || 'stamp';
+    document.getElementById('crossing-position').value = c.position || 'top-left';
+    document.getElementById('crossing-on').checked = c.on !== false;
+    document.getElementById('crossing-custom-field').style.display = c.preset === 'custom' ? 'block' : 'none';
+  } catch (e) {}
 }
 
 function onBankChange() {
+  const bank = document.getElementById('bank').value;
   applyPositions();
+  loadCrossingChoice(bank);
+  onCrossingToggle(); // sync UI opacity
   updateFields();
 }
 
@@ -1112,6 +1499,392 @@ function printCheque() {
 }
 
 /* ============================================================
+   PAYEE REGISTER
+   Storage: localStorage['payee-register'] = [ { id, name, account, bank, currency, category, notes, createdAt, lastUsedAt } ]
+   ============================================================ */
+function loadPayees() {
+  try { return JSON.parse(localStorage.getItem('payee-register') || '[]'); }
+  catch (e) { return []; }
+}
+function savePayees(list) {
+  localStorage.setItem('payee-register', JSON.stringify(list));
+}
+
+function findPayee(name) {
+  if (!name) return null;
+  const list = loadPayees();
+  const lc = name.trim().toLowerCase();
+  return list.find(p => p.name.toLowerCase() === lc) || null;
+}
+
+/* --- Autocomplete on cheque printer --- */
+let suggestionHighlight = -1;
+
+function onPayeeInput() {
+  showPayeeSuggestions();
+  updatePayeeStatus();
+  updateFields();
+}
+
+function updatePayeeStatus() {
+  const name = document.getElementById('payee').value.trim();
+  const status = document.getElementById('payee-status');
+  if (!name) { status.textContent = ''; status.className = 'helper-text'; return; }
+  const match = findPayee(name);
+  if (match) {
+    let parts = ['✓ Saved payee'];
+    if (match.account) parts.push('A/C: ' + match.account);
+    if (match.bank) parts.push(match.bank);
+    status.textContent = parts.join(' · ');
+    status.className = 'helper-text is-saved';
+  } else {
+    status.textContent = '✚ New payee — click ⊕ to save to register';
+    status.className = 'helper-text is-new';
+  }
+}
+
+function showPayeeSuggestions() {
+  const query = document.getElementById('payee').value.trim().toLowerCase();
+  const list = loadPayees();
+  const container = document.getElementById('payee-suggestions');
+
+  let matches;
+  if (!query) {
+    // Show most recently used 8
+    matches = [...list].sort((a, b) => (b.lastUsedAt || 0) - (a.lastUsedAt || 0)).slice(0, 8);
+  } else {
+    matches = list
+      .filter(p => p.name.toLowerCase().includes(query)
+                || (p.account || '').toLowerCase().includes(query)
+                || (p.category || '').toLowerCase().includes(query))
+      .slice(0, 10);
+  }
+
+  if (matches.length === 0) {
+    if (list.length === 0) {
+      container.innerHTML = '<div class="payee-suggestion-empty">No saved payees yet. Type a name and click ⊕ to save.</div>';
+    } else if (query) {
+      container.innerHTML = '<div class="payee-suggestion-empty">No saved payee matches — will be treated as a new payee.</div>';
+    } else {
+      container.innerHTML = '';
+      container.classList.remove('show');
+      return;
+    }
+  } else {
+    container.innerHTML = matches.map((p, i) => `
+      <div class="payee-suggestion" data-index="${i}" onmousedown="pickPayee('${p.id}')">
+        <div class="ps-name">${escapeHTML(p.name)}</div>
+        <div class="ps-meta">
+          ${p.bank ? p.bank + (p.account ? ' · ' : '') : ''}${p.account ? 'A/C ' + escapeHTML(p.account) : ''}${p.category ? ' · ' + escapeHTML(p.category) : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+  container.classList.add('show');
+}
+
+function hidePayeeSuggestions() {
+  // Delay so click handlers fire
+  setTimeout(() => {
+    document.getElementById('payee-suggestions').classList.remove('show');
+  }, 150);
+}
+
+function pickPayee(id) {
+  const list = loadPayees();
+  const p = list.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('payee').value = p.name;
+  // Auto-fill defaults if present and current value is empty
+  if (p.bank && document.getElementById('bank').value !== p.bank) {
+    document.getElementById('bank').value = p.bank;
+    onBankChange();
+  }
+  if (p.currency) {
+    document.getElementById('currency').value = p.currency;
+  }
+  // Update last-used timestamp
+  p.lastUsedAt = Date.now();
+  savePayees(list);
+  hidePayeeSuggestions();
+  updatePayeeStatus();
+  updateFields();
+  toast('Loaded payee: ' + p.name);
+}
+
+function quickSavePayee() {
+  const name = document.getElementById('payee').value.trim();
+  if (!name) { toast('Enter a payee name first', true); return; }
+  const existing = findPayee(name);
+  if (existing) {
+    // Open edit form with prefilled data
+    openPayeeForm(existing.id);
+    return;
+  }
+  // Open form prefilled with current cheque context
+  openPayeeForm(null, {
+    name,
+    bank: document.getElementById('bank').value,
+    currency: document.getElementById('currency').value,
+  });
+}
+
+/* --- Payee form modal --- */
+function openPayeeForm(id, prefill) {
+  const list = loadPayees();
+  const existing = id ? list.find(p => p.id === id) : null;
+  document.getElementById('payee-form-title').textContent = existing ? 'Edit Payee' : 'Add Payee';
+  document.getElementById('payee-form-id').value = existing ? existing.id : '';
+  document.getElementById('payee-form-name').value = existing ? existing.name : (prefill?.name || '');
+  document.getElementById('payee-form-account').value = existing ? (existing.account || '') : '';
+  document.getElementById('payee-form-bank').value = existing ? (existing.bank || '') : (prefill?.bank || '');
+  document.getElementById('payee-form-currency').value = existing ? (existing.currency || '') : (prefill?.currency || '');
+  document.getElementById('payee-form-category').value = existing ? (existing.category || '') : '';
+  document.getElementById('payee-form-notes').value = existing ? (existing.notes || '') : '';
+  document.getElementById('payee-form-modal').classList.add('show');
+  setTimeout(() => document.getElementById('payee-form-name').focus(), 50);
+}
+
+function closePayeeForm() {
+  document.getElementById('payee-form-modal').classList.remove('show');
+}
+
+function savePayeeForm() {
+  const id = document.getElementById('payee-form-id').value;
+  const name = document.getElementById('payee-form-name').value.trim();
+  if (!name) { toast('Payee name is required', true); return; }
+
+  const list = loadPayees();
+
+  // Check for duplicate name (case-insensitive) excluding self
+  const dup = list.find(p => p.name.toLowerCase() === name.toLowerCase() && p.id !== id);
+  if (dup) {
+    if (!confirm(`A payee named "${dup.name}" already exists. Save anyway as a separate entry?`)) return;
+  }
+
+  const payeeData = {
+    name,
+    account: document.getElementById('payee-form-account').value.trim(),
+    bank: document.getElementById('payee-form-bank').value,
+    currency: document.getElementById('payee-form-currency').value,
+    category: document.getElementById('payee-form-category').value.trim(),
+    notes: document.getElementById('payee-form-notes').value.trim(),
+  };
+
+  if (id) {
+    const idx = list.findIndex(p => p.id === id);
+    if (idx >= 0) {
+      list[idx] = { ...list[idx], ...payeeData, updatedAt: Date.now() };
+    }
+    toast('Payee updated: ' + name);
+  } else {
+    list.push({
+      id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+      ...payeeData,
+      createdAt: Date.now(),
+      lastUsedAt: 0,
+    });
+    toast('Payee saved: ' + name);
+  }
+
+  savePayees(list);
+  closePayeeForm();
+  renderPayees();
+  updatePayeeStatus();
+}
+
+function deletePayee(id) {
+  const list = loadPayees();
+  const p = list.find(x => x.id === id);
+  if (!p) return;
+  if (!confirm(`Delete payee "${p.name}" from the register? Cheques already saved are not affected.`)) return;
+  savePayees(list.filter(x => x.id !== id));
+  renderPayees();
+  toast('Payee deleted');
+}
+
+function usePayeeInPrinter(id) {
+  pickPayee(id);
+  switchTab('printer');
+}
+
+function renderPayees() {
+  const list = loadPayees();
+  const search = (document.getElementById('payee-search')?.value || '').toLowerCase().trim();
+  const filterBank = document.getElementById('payee-filter-bank')?.value || '';
+
+  const filtered = list.filter(p => {
+    if (filterBank && p.bank !== filterBank) return false;
+    if (!search) return true;
+    return (
+      p.name.toLowerCase().includes(search) ||
+      (p.account || '').toLowerCase().includes(search) ||
+      (p.category || '').toLowerCase().includes(search) ||
+      (p.notes || '').toLowerCase().includes(search)
+    );
+  });
+
+  // Sort: most recently used first, then alphabetical
+  filtered.sort((a, b) => {
+    if ((b.lastUsedAt || 0) !== (a.lastUsedAt || 0)) return (b.lastUsedAt || 0) - (a.lastUsedAt || 0);
+    return a.name.localeCompare(b.name);
+  });
+
+  // Stats
+  const reg = loadRegister();
+  const usageCount = {};
+  reg.forEach(c => {
+    if (c.payee) usageCount[c.payee.toLowerCase()] = (usageCount[c.payee.toLowerCase()] || 0) + 1;
+  });
+
+  const totalByPayee = {};
+  reg.forEach(c => {
+    if (c.payee) {
+      const key = c.payee.toLowerCase();
+      totalByPayee[key] = totalByPayee[key] || {};
+      totalByPayee[key][c.currency] = (totalByPayee[key][c.currency] || 0) + (c.amount || 0);
+    }
+  });
+
+  const stats = document.getElementById('payees-stats');
+  if (stats) {
+    stats.innerHTML = `
+      <div class="stat-card"><div class="stat-label">Total Payees</div><div class="stat-value">${list.length}</div><div class="stat-detail">${filtered.length} shown</div></div>
+      <div class="stat-card"><div class="stat-label">Most Used</div><div class="stat-value" style="font-size:18px">${
+        Object.entries(usageCount).sort((a,b) => b[1] - a[1])[0]?.[0]?.substring(0, 20) || '—'
+      }</div><div class="stat-detail">${Object.entries(usageCount).sort((a,b) => b[1] - a[1])[0]?.[1] || 0} cheques</div></div>
+      <div class="stat-card"><div class="stat-label">In Categories</div><div class="stat-value">${new Set(list.map(p => p.category).filter(Boolean)).size}</div><div class="stat-detail">${list.filter(p => p.category).length} categorised</div></div>
+    `;
+  }
+
+  const grid = document.getElementById('payees-grid');
+  if (!grid) return;
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="register-empty" style="grid-column: 1 / -1;">' +
+      (list.length === 0
+        ? 'No payees saved yet. Click "Add Payee" or save one directly while printing a cheque.'
+        : 'No payees match your filter.') + '</div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map(p => {
+    const usage = usageCount[p.name.toLowerCase()] || 0;
+    const totals = totalByPayee[p.name.toLowerCase()] || {};
+    const totalsText = Object.entries(totals).map(([cur, amt]) => `${cur} ${formatAmount(amt, cur)}`).join(' · ');
+    return `
+      <div class="payee-card">
+        <div class="pc-name">${escapeHTML(p.name)}</div>
+        <div class="pc-meta">${p.account ? 'A/C ' + escapeHTML(p.account) : '<span style="opacity:0.4">no account number</span>'}</div>
+        ${p.bank ? `<span class="pc-bank">${p.bank}${p.currency ? ' · ' + p.currency : ''}</span>` : ''}
+        ${p.category ? `<span class="pc-bank" style="background: rgba(255,184,58,0.15); color: var(--accent-2);">${escapeHTML(p.category)}</span>` : ''}
+        <div class="pc-notes">${p.notes ? escapeHTML(p.notes) : ''}</div>
+        <div class="pc-stats">${usage} cheque${usage === 1 ? '' : 's'} issued${totalsText ? ' · ' + totalsText : ''}</div>
+        <div class="pc-actions">
+          <button class="btn btn-sm btn-primary" onclick="usePayeeInPrinter('${p.id}')">↗ Use</button>
+          <button class="btn btn-sm" onclick="openPayeeForm('${p.id}')">✎ Edit</button>
+          <button class="btn btn-sm btn-ghost btn-danger" onclick="deletePayee('${p.id}')">🗑</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function exportPayeesCSV() {
+  const list = loadPayees();
+  if (list.length === 0) { toast('No payees to export', true); return; }
+  const headers = ['Name', 'Account Number', 'Default Bank', 'Default Currency', 'Category', 'Notes'];
+  const rows = list.map(p => [p.name, p.account || '', p.bank || '', p.currency || '', p.category || '', p.notes || '']);
+  const esc = v => {
+    const s = String(v);
+    return (s.includes(',') || s.includes('"') || s.includes('\n')) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+  const csv = [headers, ...rows].map(r => r.map(esc).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const today = new Date().toISOString().split('T')[0];
+  a.download = `payees-${today}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Payees exported · ' + list.length + ' entries');
+}
+
+function importPayeesCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const text = e.target.result.replace(/^\uFEFF/, '');
+      // Simple CSV parser supporting quoted fields
+      const rows = parseCSV(text);
+      if (rows.length < 2) { toast('CSV is empty', true); return; }
+      const headers = rows[0].map(h => h.toLowerCase().trim());
+      const nameIdx = headers.findIndex(h => h.includes('name'));
+      if (nameIdx < 0) { toast('CSV must have a "Name" column', true); return; }
+      const accIdx = headers.findIndex(h => h.includes('account'));
+      const bankIdx = headers.findIndex(h => h.includes('bank'));
+      const curIdx = headers.findIndex(h => h.includes('currency'));
+      const catIdx = headers.findIndex(h => h.includes('category'));
+      const noteIdx = headers.findIndex(h => h.includes('note'));
+
+      const existing = loadPayees();
+      const existingNames = new Set(existing.map(p => p.name.toLowerCase()));
+      let added = 0, skipped = 0;
+      for (let i = 1; i < rows.length; i++) {
+        const r = rows[i];
+        if (!r[nameIdx] || !r[nameIdx].trim()) continue;
+        const name = r[nameIdx].trim();
+        if (existingNames.has(name.toLowerCase())) { skipped++; continue; }
+        existing.push({
+          id: Date.now() + '-' + Math.random().toString(36).slice(2, 7) + '-' + i,
+          name,
+          account:  accIdx >= 0 ? (r[accIdx] || '').trim() : '',
+          bank:     bankIdx >= 0 ? (r[bankIdx] || '').trim() : '',
+          currency: curIdx >= 0 ? (r[curIdx] || '').trim() : '',
+          category: catIdx >= 0 ? (r[catIdx] || '').trim() : '',
+          notes:    noteIdx >= 0 ? (r[noteIdx] || '').trim() : '',
+          createdAt: Date.now(),
+          lastUsedAt: 0,
+        });
+        existingNames.add(name.toLowerCase());
+        added++;
+      }
+      savePayees(existing);
+      renderPayees();
+      toast(`Imported ${added} payee${added === 1 ? '' : 's'}` + (skipped ? ` · ${skipped} duplicates skipped` : ''));
+    } catch (err) {
+      toast('Could not parse CSV: ' + err.message, true);
+    }
+    event.target.value = ''; // reset input
+  };
+  reader.readAsText(file);
+}
+
+function parseCSV(text) {
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"' && text[i + 1] === '"') { field += '"'; i++; }
+      else if (c === '"') { inQuotes = false; }
+      else { field += c; }
+    } else {
+      if (c === '"') inQuotes = true;
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\n' || c === '\r') {
+        if (field !== '' || row.length) { row.push(field); rows.push(row); row = []; field = ''; }
+        if (c === '\r' && text[i + 1] === '\n') i++;
+      } else field += c;
+    }
+  }
+  if (field !== '' || row.length) { row.push(field); rows.push(row); }
+  return rows;
+}
+
+/* ============================================================
    REGISTER (cheque history)
    ============================================================ */
 function nextChequeNumber(current) {
@@ -1131,11 +1904,18 @@ function saveCheque() {
     payee,
     amount: parseFloat(document.getElementById('amount').value) || 0,
     date: document.getElementById('date').value,
+    undated: document.getElementById('undated').checked,
+    undatedText: document.getElementById('undated-text').value,
+    undatedCustom: document.getElementById('undated-custom').value,
     currency: document.getElementById('currency').value,
     bank: document.getElementById('bank').value,
     branch: document.getElementById('branch').value,
     memo: document.getElementById('memo').value,
-    acPayee: document.getElementById('account-payee').checked,
+    crossingOn: document.getElementById('crossing-on').checked,
+    crossingPreset: document.getElementById('crossing-preset').value,
+    crossingCustom: document.getElementById('crossing-custom').value,
+    crossingStyle: document.getElementById('crossing-style').value,
+    crossingPosition: document.getElementById('crossing-position').value,
     savedAt: new Date().toISOString(),
     id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
   };
@@ -1144,12 +1924,22 @@ function saveCheque() {
   list.unshift(cheque);
   saveRegister(list);
 
+  // Auto-link to payee register: update lastUsedAt if exists, no auto-create
+  // (we prefer explicit save via the ⊕ button so users control which payees are stored)
+  const payeeList = loadPayees();
+  const existing = payeeList.find(p => p.name.toLowerCase() === payee.toLowerCase());
+  if (existing) {
+    existing.lastUsedAt = Date.now();
+    savePayees(payeeList);
+  }
+
   // Auto-increment cheque number and clear payee/amount/memo
   document.getElementById('cheque-no').value = nextChequeNumber(cheque.chequeNo);
   document.getElementById('payee').value = '';
   document.getElementById('amount').value = '';
   document.getElementById('memo').value = '';
   updateFields();
+  updatePayeeStatus();
   renderRegister();
   toast('Saved · #' + (cheque.chequeNo || '—') + ' to ' + cheque.payee);
 }
@@ -1172,7 +1962,29 @@ function loadChequeFromRegister(id) {
   document.getElementById('bank').value = c.bank || 'BML';
   document.getElementById('branch').value = c.branch || '';
   document.getElementById('memo').value = c.memo || '';
-  document.getElementById('account-payee').checked = c.acPayee !== false;
+
+  // Undated
+  document.getElementById('undated').checked = !!c.undated;
+  document.getElementById('undated-text').value = c.undatedText || '';
+  document.getElementById('undated-custom').value = c.undatedCustom || '';
+  onUndatedToggle();
+  onUndatedTextChange();
+
+  // Crossing — fall back to legacy acPayee field if loading old entries
+  if (typeof c.crossingOn !== 'undefined') {
+    document.getElementById('crossing-on').checked = !!c.crossingOn;
+    document.getElementById('crossing-preset').value = c.crossingPreset || 'ac-payee';
+    document.getElementById('crossing-custom').value = c.crossingCustom || '';
+    document.getElementById('crossing-style').value = c.crossingStyle || 'stamp';
+    document.getElementById('crossing-position').value = c.crossingPosition || 'top-left';
+  } else {
+    // Legacy entry — map old acPayee boolean
+    document.getElementById('crossing-on').checked = c.acPayee !== false;
+    document.getElementById('crossing-preset').value = 'ac-payee';
+  }
+  onCrossingPresetChange();
+  onCrossingToggle();
+
   applyPositions();
   updateFields();
   switchTab('printer');
@@ -1256,26 +2068,45 @@ function renderRegister() {
 function exportCSV() {
   const list = loadRegister();
   if (list.length === 0) { toast('Register is empty', true); return; }
-  const headers = ['Cheque No', 'Date', 'Bank', 'Branch', 'Payee', 'Currency', 'Amount', 'Amount in Words', 'Memo', 'A/C Payee', 'Saved At'];
-  const rows = list.map(c => [
-    c.chequeNo || '',
-    c.date || '',
-    c.bank || '',
-    c.branch || '',
-    c.payee || '',
-    c.currency || '',
-    c.amount || 0,
-    amountToWords(c.amount, c.currency),
-    c.memo || '',
-    c.acPayee ? 'Yes' : 'No',
-    c.savedAt || '',
-  ]);
+  const headers = ['Cheque No', 'Date', 'Undated', 'Bank', 'Branch', 'Payee', 'Currency', 'Amount', 'Amount in Words', 'Memo', 'Crossing', 'Saved At'];
+  const rows = list.map(c => {
+    let crossing = '';
+    if (c.crossingOn) {
+      if (c.crossingPreset === 'custom') crossing = c.crossingCustom || '';
+      else {
+        const map = {
+          'ac-payee': 'A/C Payee Only',
+          'ac-payee-not-neg': 'A/C Payee Only · Not Negotiable',
+          'not-neg': 'Not Negotiable',
+          'and-co': '& Co.',
+          'payees-ac': "Payee's A/C Only",
+        };
+        crossing = map[c.crossingPreset] || '';
+      }
+    } else if (typeof c.crossingOn === 'undefined' && c.acPayee) {
+      // Legacy entry
+      crossing = 'A/C Payee Only';
+    }
+    return [
+      c.chequeNo || '',
+      c.date || '',
+      c.undated ? 'Yes' : 'No',
+      c.bank || '',
+      c.branch || '',
+      c.payee || '',
+      c.currency || '',
+      c.amount || 0,
+      amountToWords(c.amount, c.currency),
+      c.memo || '',
+      crossing,
+      c.savedAt || '',
+    ];
+  });
   const escape = v => {
     const s = String(v);
     return (s.includes(',') || s.includes('"') || s.includes('\n')) ? '"' + s.replace(/"/g, '""') + '"' : s;
   };
   const csv = [headers, ...rows].map(r => r.map(escape).join(',')).join('\n');
-  // UTF-8 BOM so Excel reads correctly (especially for ₹ etc.)
   const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1311,9 +2142,11 @@ function closeHelp() { document.getElementById('help-modal').classList.remove('s
 function switchTab(name) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
   document.getElementById('printer-view').style.display = name === 'printer' ? 'grid' : 'none';
+  document.getElementById('payees-view').style.display = name === 'payees' ? 'block' : 'none';
   document.getElementById('register-view').style.display = name === 'register' ? 'block' : 'none';
   document.getElementById('print-btn').style.display = name === 'printer' ? 'inline-flex' : 'none';
   if (name === 'register') renderRegister();
+  if (name === 'payees') renderPayees();
 }
 
 /* ============================================================
@@ -1323,6 +2156,8 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('date').value = new Date().toISOString().split('T')[0];
   document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
   applyPositions();
+  loadCrossingChoice(document.getElementById('bank').value);
+  onCrossingToggle();
   setupDragHandlers();
   updateFields();
   renderRegister();
@@ -1331,6 +2166,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
 document.getElementById('help-modal').addEventListener('click', (e) => {
   if (e.target.id === 'help-modal') closeHelp();
+});
+document.getElementById('payee-form-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'payee-form-modal') closePayeeForm();
 });
 </script>
 
