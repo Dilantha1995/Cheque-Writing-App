@@ -685,7 +685,7 @@
         <!-- Draggable fields -->
         <div class="field-box field-date" data-field="date" style="top: 6mm; left: 130mm;">
           <span class="label-tag">Date</span>
-          <span class="field-content" id="f-date">DD MM YYYY</span>
+          <span class="field-content" id="f-date"></span>
         </div>
 
         <div class="field-box field-payee" data-field="payee" style="top: 22mm; left: 22mm;">
@@ -1147,7 +1147,7 @@ function applyPositions() {
 }
 
 function formatDate(d) {
-  if (!d) return 'DD MM YYYY';
+  if (!d) return '';
   const parts = d.split('-');
   if (parts.length !== 3) return d;
   return `${parts[2]} ${parts[1]} ${parts[0]}`;
@@ -1213,19 +1213,25 @@ function updateFields() {
 
   // Date — handle undated
   const dateEl = document.getElementById('f-date');
+  const dateBox = document.querySelector('[data-field="date"]');
+  let dateContent = '';
   if (undated) {
     const undatedChoice = document.getElementById('undated-text').value;
     if (undatedChoice === 'custom') {
-      dateEl.textContent = document.getElementById('undated-custom').value || '';
+      dateContent = document.getElementById('undated-custom').value || '';
     } else {
-      dateEl.textContent = undatedChoice; // empty string for blank
+      dateContent = undatedChoice; // empty string for blank
     }
-    // Hide the field entirely if completely blank so it doesn't show a placeholder
-    document.querySelector('[data-field="date"]').style.visibility =
-      dateEl.textContent.trim() === '' ? 'hidden' : 'visible';
+  } else if (date) {
+    dateContent = formatDate(date);
+  }
+  // If there's actual content, show it. If blank, hide the box entirely.
+  if (dateContent.trim() === '') {
+    dateEl.textContent = '';
+    dateBox.style.display = 'none';
   } else {
-    dateEl.textContent = formatDate(date);
-    document.querySelector('[data-field="date"]').style.visibility = 'visible';
+    dateEl.textContent = dateContent;
+    dateBox.style.display = 'flex';
   }
 
   // English words
@@ -2050,7 +2056,7 @@ function renderRegister() {
   }
   body.innerHTML = filtered.map(c => `
     <tr>
-      <td style="font-family: 'JetBrains Mono', monospace; font-size: 12px;">${formatDate(c.date)}</td>
+      <td style="font-family: 'JetBrains Mono', monospace; font-size: 12px;">${c.undated ? '<span style="color: var(--ink-dim); font-style: italic;">undated</span>' : (formatDate(c.date) || '—')}</td>
       <td style="font-family: 'JetBrains Mono', monospace; font-weight: 600;">${escapeHTML(c.chequeNo || '—')}</td>
       <td><span class="pill">${c.bank}</span></td>
       <td>${escapeHTML(c.payee)}</td>
