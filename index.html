@@ -2723,21 +2723,21 @@ function setupToggles() {
     if (!input) return;
     syncToggle(label, input);
 
-    // Replace the label's default toggle behavior with explicit handling.
-    // This prevents the browser scrolling the focused (hidden) input into view,
-    // which was causing the page to jump to the top on click.
-    label.addEventListener('click', (e) => {
-      // Ignore clicks on inner interactive elements (none expected, but safe)
-      if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON') return;
-      e.preventDefault();
-      input.checked = !input.checked;
-      syncToggle(label, input);
-      // Fire change event so existing onchange handlers run
-      input.dispatchEvent(new Event('change', { bubbles: true }));
-    });
-
-    // Defensive: also handle direct input changes (e.g. keyboard navigation)
+    // The browser handles the label→input toggle natively.
+    // We just listen for the resulting change event and sync the visual state.
+    // We also use 'change' (not 'click') to avoid double-firing.
     input.addEventListener('change', () => syncToggle(label, input));
+
+    // Prevent the browser's "scroll focused input into view" behavior that
+    // causes the page to jump on click. We blur the input immediately after focus.
+    input.addEventListener('focus', () => {
+      // Save the current scroll position
+      const x = window.scrollX, y = window.scrollY;
+      requestAnimationFrame(() => {
+        input.blur();
+        window.scrollTo(x, y);
+      });
+    });
   });
 }
 function syncToggle(label, input) {
