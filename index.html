@@ -177,13 +177,30 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, sans-serif; backg
 .fhint code { background: var(--s2); padding: 1px 5px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 10px; }
 
 /* ── TOGGLE SWITCH ── */
-.tgl { display: flex; align-items: center; gap: 10px; padding: 8px 11px; background: var(--s2); border-radius: var(--r); border: 1px solid var(--border); cursor: pointer; user-select: none; }
-.tgl input { display: none; }
-.tgl-label { display: inline-flex; align-items: center; gap: 9px; cursor: pointer; font-size: 12px; color: var(--text); flex: 1; }
-.tgl-switch { width: 30px; height: 17px; background: var(--border2); border-radius: 17px; position: relative; transition: background .15s; flex-shrink: 0; }
-.tgl-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 13px; height: 13px; background: #fff; border-radius: 50%; transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.15); }
-.tgl input:checked + .tgl-label .tgl-switch { background: var(--blue); }
-.tgl input:checked + .tgl-label .tgl-switch::after { transform: translateX(13px); }
+.tgl {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 11px; background: var(--s2);
+  border-radius: var(--r); border: 1px solid var(--border);
+  cursor: pointer; user-select: none;
+  font-size: 12px; color: var(--text);
+}
+.tgl input[type="checkbox"] { position: absolute; opacity: 0; pointer-events: none; }
+.tgl-switch {
+  width: 30px; height: 17px; background: var(--border2);
+  border-radius: 17px; position: relative;
+  transition: background .15s; flex-shrink: 0;
+}
+.tgl-switch::after {
+  content: ''; position: absolute; top: 2px; left: 2px;
+  width: 13px; height: 13px; background: #fff;
+  border-radius: 50%; transition: transform .15s;
+  box-shadow: 0 1px 2px rgba(0,0,0,.15);
+}
+.tgl:has(input:checked) .tgl-switch { background: var(--blue); }
+.tgl:has(input:checked) .tgl-switch::after { transform: translateX(13px); }
+/* Fallback for older browsers without :has() */
+.tgl input:checked ~ .tgl-switch { background: var(--blue); }
+.tgl input:checked ~ .tgl-switch::after { transform: translateX(13px); }
 
 /* ── TABLES ── */
 .tw { overflow-x: auto; }
@@ -475,6 +492,21 @@ body.preview-mode.print-with-bg .cheque-bg { display: block !important; }
 .work-grid { display: grid; grid-template-columns: 380px 1fr; gap: 14px; align-items: start; }
 @media (max-width: 1200px) { .work-grid { grid-template-columns: 1fr; } }
 .work-form { background: transparent; }
+.work-preview-col {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  max-height: calc(100vh - 50px - 36px); /* viewport - topbar - main padding */
+  overflow-y: auto;
+  padding-right: 4px;
+}
+@media (max-width: 1200px) {
+  .work-preview-col {
+    position: static;
+    max-height: none;
+    overflow-y: visible;
+  }
+}
 
 </style>
 </head>
@@ -553,7 +585,8 @@ body.preview-mode.print-with-bg .cheque-bg { display: block !important; }
               </div>
               <label class="tgl" style="margin-bottom:10px">
                 <input type="checkbox" id="undated" onchange="onUndatedToggle()">
-                <span class="tgl-label"><span class="tgl-switch"></span>Leave undated (print blank or custom)</span>
+                  <span class="tgl-switch"></span>
+                  <span>Leave undated (print blank or custom)</span>
               </label>
               <div class="fg" id="undated-text-field" style="display:none">
                 <label class="fl" for="undated-text">Date Line Text (when undated)</label>
@@ -632,7 +665,8 @@ body.preview-mode.print-with-bg .cheque-bg { display: block !important; }
             <div class="cb-tight">
               <label class="tgl" style="margin-bottom:10px">
                 <input type="checkbox" id="crossing-on" checked onchange="onCrossingToggle()">
-                <span class="tgl-label"><span class="tgl-switch"></span>Print crossing on cheque</span>
+                  <span class="tgl-switch"></span>
+                  <span>Print crossing on cheque</span>
               </label>
               <div id="crossing-options">
                 <div class="fg">
@@ -677,11 +711,13 @@ body.preview-mode.print-with-bg .cheque-bg { display: block !important; }
             <div class="cb-tight">
               <label class="tgl" style="margin-bottom:8px">
                 <input type="checkbox" id="show-dhivehi" checked onchange="updateFields()">
-                <span class="tgl-label"><span class="tgl-switch"></span>Print Dhivehi line (MVR only)</span>
+                  <span class="tgl-switch"></span>
+                  <span>Print Dhivehi line (MVR only)</span>
               </label>
               <label class="tgl" style="margin-bottom:0">
                 <input type="checkbox" id="show-currency-prefix" onchange="updateFields()">
-                <span class="tgl-label"><span class="tgl-switch"></span>Print currency code with amount</span>
+                  <span class="tgl-switch"></span>
+                  <span>Print currency code with amount</span>
               </label>
               <div class="help-text">Pre-printed cheques already show the currency — keep this OFF for real cheques.</div>
             </div>
@@ -701,11 +737,13 @@ body.preview-mode.print-with-bg .cheque-bg { display: block !important; }
               </div>
               <label class="tgl" style="margin-bottom:6px">
                 <input type="checkbox" id="bg-show" checked onchange="updateFields()">
-                <span class="tgl-label"><span class="tgl-switch"></span>Show background in preview</span>
+                  <span class="tgl-switch"></span>
+                  <span>Show background in preview</span>
               </label>
               <label class="tgl" style="margin-bottom:8px">
                 <input type="checkbox" id="bg-print" onchange="updateFields()">
-                <span class="tgl-label"><span class="tgl-switch"></span>Include background when printing</span>
+                  <span class="tgl-switch"></span>
+                  <span>Include background when printing</span>
               </label>
               <div class="fg" style="margin-bottom:0">
                 <label class="fl" for="bg-opacity">Preview Opacity <span class="val" id="bg-opacity-value">60%</span></label>
@@ -722,15 +760,18 @@ body.preview-mode.print-with-bg .cheque-bg { display: block !important; }
             <div class="cb">
               <label class="tgl" style="margin-bottom:8px">
                 <input type="checkbox" id="edit-mode-toggle" onchange="toggleEditMode()">
-                <span class="tgl-label"><span class="tgl-switch"></span>Edit Mode (drag &amp; resize fields)</span>
+                  <span class="tgl-switch"></span>
+                  <span>Edit Mode (drag &amp; resize fields)</span>
               </label>
               <label class="tgl" style="margin-bottom:8px">
                 <input type="checkbox" id="auto-fit" checked onchange="updateFields()">
-                <span class="tgl-label"><span class="tgl-switch"></span>Auto-fit text to box width</span>
+                  <span class="tgl-switch"></span>
+                  <span>Auto-fit text to box width</span>
               </label>
               <label class="tgl" style="margin-bottom:8px">
                 <input type="checkbox" id="show-template" onchange="updateFields()">
-                <span class="tgl-label"><span class="tgl-switch"></span>Show bank header (plain paper)</span>
+                  <span class="tgl-switch"></span>
+                  <span>Show bank header (plain paper)</span>
               </label>
               <div class="help-text" style="margin-bottom:10px">In Edit Mode: drag fields to move, drag the corner handle to resize the box. Text shrinks to fit.</div>
               <div class="brow">
@@ -762,7 +803,7 @@ body.preview-mode.print-with-bg .cheque-bg { display: block !important; }
         </div>
 
         <!-- ── RIGHT: PREVIEW STAGE ── -->
-        <div>
+        <div class="work-preview-col">
           <div class="preview-controls">
             <span class="bdg b-sub"><span class="bd"></span><span id="mode-label">Preview</span></span>
             <span style="flex:1"></span>
@@ -1919,15 +1960,22 @@ function onBgOpacityChange() {
    ============================================================ */
 function setZoom(delta) {
   if (delta === 'fit') {
-    const main = document.querySelector('main.preview-area');
-    const availW = main.clientWidth - 80;
-    const chequeW = 178 * 96 / 25.4;
-    currentZoom = Math.min(1.5, Math.max(0.5, availW / chequeW));
+    // Use the preview column or main container — adapt to whichever layout is active
+    const container = document.querySelector('.work-preview-col') || document.querySelector('.cheque-stage') || document.querySelector('.main');
+    if (!container) {
+      currentZoom = 1;
+    } else {
+      const availW = container.clientWidth - 60;
+      const chequeW = 178 * 96 / 25.4;
+      currentZoom = Math.min(1.5, Math.max(0.4, availW / chequeW));
+    }
   } else {
     currentZoom = Math.min(2, Math.max(0.4, currentZoom + delta));
   }
-  document.getElementById('cheque-wrapper').style.transform = `scale(${currentZoom})`;
-  document.getElementById('zoom-display').textContent = Math.round(currentZoom * 100) + '%';
+  const wrap = document.getElementById('cheque-wrapper');
+  if (wrap) wrap.style.transform = `scale(${currentZoom})`;
+  const disp = document.getElementById('zoom-display');
+  if (disp) disp.textContent = Math.round(currentZoom * 100) + '%';
 }
 
 /* ============================================================
