@@ -3,628 +3,1039 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cheque Printer Pro — Maldives Banks</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>Cheque Printer — Maldives Banks</title>
 <style>
-  :root {
-    --bg: #0e1116;
-    --panel: #161a22;
-    --panel-2: #1d222c;
-    --panel-3: #242b38;
-    --border: #2a3140;
-    --ink: #e6e9ef;
-    --ink-dim: #9aa3b2;
-    --accent: #00d4a8;
-    --accent-2: #ffb83a;
-    --danger: #ff5577;
-    --paper: #fefcf6;
-    --paper-line: #c9b88a;
-    --paper-ink: #1a2742;
-    --shadow: 0 30px 60px -20px rgba(0,0,0,0.6), 0 8px 20px -10px rgba(0,0,0,0.4);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { background: var(--bg); color: var(--ink); font-family: 'Inter', sans-serif; min-height: 100vh; }
-  body {
-    background-image:
-      radial-gradient(at 15% 10%, rgba(0,212,168,0.08) 0%, transparent 50%),
-      radial-gradient(at 85% 90%, rgba(255,184,58,0.06) 0%, transparent 50%);
-  }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* HEADER */
-  header.app-header {
-    padding: 22px 32px 18px;
-    border-bottom: 1px solid var(--border);
-    display: flex; justify-content: space-between; align-items: center;
-    background: rgba(14,17,22,0.85); backdrop-filter: blur(12px);
-    position: sticky; top: 0; z-index: 50;
-  }
-  .brand {
-    font-family: 'Fraunces', serif; font-weight: 800; font-size: 24px; letter-spacing: -0.02em;
-    display: flex; align-items: center; gap: 12px;
-  }
-  .brand-mark {
-    width: 38px; height: 38px; border-radius: 10px;
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
-    display: grid; place-items: center; color: #0e1116; font-weight: 800; font-size: 18px;
-  }
-  .brand-sub { color: var(--ink-dim); font-family: 'Inter', sans-serif; font-weight: 500; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; margin-top: 2px; }
+:root {
+  --bg: #f4f6f9;
+  --surface: #fff;
+  --s2: #f0f2f6;
+  --s3: #e8ebf0;
+  --border: #dde1e8;
+  --border2: #c8cdd8;
+  --text: #1c2030;
+  --t2: #5c6478;
+  --t3: #9ba3b5;
+  --blue: #1849a9;
+  --blue2: #eef2fc;
+  --blue3: #0d2d6e;
+  --green:#166534; --green2:#f0fdf4; --green3:#dcfce7;
+  --amber:#92400e; --amber2:#fffbeb;
+  --red:  #991b1b; --red2:  #fef2f2; --red3:  #fee2e2;
+  --teal: #115e59; --teal2: #f0fdfa;
+  --orange:#c2410c;--orange2:#fff7ed;
+  --purple:#6b21a8;--purple2:#faf5ff;
+  --r: 8px;
+  --r2: 12px;
+  /* Paper / cheque */
+  --paper: #fefcf6;
+  --paper-line: #c9b88a;
+  --paper-ink: #1a2742;
+}
 
-  /* TABS */
-  .tabs { display: flex; gap: 4px; background: var(--panel-2); padding: 4px; border-radius: 10px; border: 1px solid var(--border); }
-  .tab {
-    padding: 8px 16px; border-radius: 7px; cursor: pointer;
-    font-size: 13px; font-weight: 600; color: var(--ink-dim);
-    border: none; background: transparent; transition: all 0.15s;
-  }
-  .tab:hover { color: var(--ink); }
-  .tab.active { background: var(--accent); color: #0e1116; }
-  .header-actions { display: flex; gap: 10px; align-items: center; }
+html, body { height: 100%; font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 13px; line-height: 1.5; }
 
-  /* LAYOUT */
-  .app-grid {
-    display: grid; grid-template-columns: 440px 1fr; gap: 0;
-    min-height: calc(100vh - 80px);
-  }
-  @media (max-width: 1100px) { .app-grid { grid-template-columns: 1fr; } }
+/* ── TOPBAR ── */
+.topbar {
+  background: var(--blue3); color: #fff;
+  padding: 10px 18px;
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 13px;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 2px 6px rgba(0,0,0,.15);
+}
+.topbar .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+.topbar .logo-box {
+  width: 30px; height: 30px; background: #fff; color: var(--blue3);
+  border-radius: 6px; font-size: 12px; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+}
+.topbar .logo-text { display: flex; flex-direction: column; line-height: 1.1; }
+.topbar .logo-text small { font-size: 10px; opacity: .65; font-weight: 400; margin-top: 2px; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.topbar-pill {
+  background: rgba(255,255,255,.12); border-radius: 20px;
+  padding: 4px 12px; font-size: 11px; font-weight: 600;
+}
 
-  /* SIDEBAR */
-  aside.sidebar {
-    background: var(--panel);
-    border-right: 1px solid var(--border);
-    padding: 24px;
-    overflow-y: auto;
-    max-height: calc(100vh - 80px);
-  }
-  @media (max-width: 1100px) { aside.sidebar { max-height: none; } }
+/* ── APP BODY ── */
+.app-body { display: grid; grid-template-columns: 215px 1fr; min-height: calc(100vh - 50px); }
+.sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 8px 0; overflow-y: auto; }
+.nav-sec {
+  font-size: 9px; font-weight: 800; color: var(--t3);
+  padding: 14px 18px 4px; text-transform: uppercase; letter-spacing: .09em;
+}
+.ni {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 18px; font-size: 12px; color: var(--t2);
+  cursor: pointer; border-left: 3px solid transparent;
+  transition: all .12s; user-select: none;
+}
+.ni:hover { background: var(--s2); color: var(--text); }
+.ni.active { background: var(--blue2); color: var(--blue); border-left-color: var(--blue); font-weight: 600; }
+.ni .ic { font-size: 15px; width: 18px; text-align: center; }
 
-  .section-title {
-    font-family: 'Fraunces', serif; font-weight: 600; font-size: 17px;
-    margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
-  }
-  .section-title::before {
-    content: ''; width: 3px; height: 16px; background: var(--accent); border-radius: 2px;
-  }
-  .section { margin-bottom: 24px; }
+.main { padding: 18px 22px 60px; background: var(--bg); overflow-y: auto; max-height: calc(100vh - 50px); }
 
-  .field { margin-bottom: 12px; }
-  label.field-label {
-    display: block; font-size: 10px; color: var(--ink-dim); margin-bottom: 5px;
-    font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
-  }
-  input, select, textarea {
-    width: 100%; padding: 10px 12px;
-    background: var(--panel-2); color: var(--ink);
-    border: 1px solid var(--border); border-radius: 8px;
-    font-family: 'Inter', sans-serif; font-size: 13px;
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
-  input:focus, select:focus, textarea:focus {
-    outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,212,168,0.15);
-  }
-  textarea { resize: vertical; min-height: 60px; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+/* ── PAGE HEADER ── */
+.ph { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
+.pt { font-size: 19px; font-weight: 700; color: var(--text); }
+.ps { font-size: 12px; color: var(--t2); margin-top: 3px; }
+.brow { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
-  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: var(--r);
+  border: 1px solid var(--border2); background: var(--surface); color: var(--text);
+  font-size: 12px; cursor: pointer; font-weight: 500;
+  transition: all .12s; white-space: nowrap; line-height: 1.4;
+  font-family: inherit;
+}
+.btn:hover { background: var(--s2); }
+.btn-p { background: var(--blue); color: #fff; border-color: var(--blue); }
+.btn-p:hover { background: var(--blue3); }
+.btn-g { background: var(--green); color: #fff; border-color: var(--green); }
+.btn-r { background: var(--red); color: #fff; border-color: var(--red); }
+.btn-o { background: var(--orange); color: #fff; border-color: var(--orange); }
+.btn-sm { padding: 5px 11px; font-size: 11px; }
+.btn-xs { padding: 3px 8px; font-size: 10px; border-radius: 6px; }
+.btn-ghost { background: transparent; border-color: transparent; color: var(--t2); }
+.btn-ghost:hover { background: var(--s2); color: var(--text); }
+.btn-danger-ghost { background: transparent; border-color: transparent; color: var(--red); }
+.btn-danger-ghost:hover { background: var(--red2); }
 
-  /* BUTTONS */
-  .btn {
-    padding: 9px 14px; border-radius: 8px; border: 1px solid var(--border);
-    background: var(--panel-2); color: var(--ink);
-    font-family: 'Inter', sans-serif; font-weight: 600; font-size: 12px;
-    cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px;
-  }
-  .btn:hover { border-color: var(--accent); transform: translateY(-1px); }
-  .btn-primary { background: var(--accent); color: #0e1116; border-color: var(--accent); }
-  .btn-primary:hover { background: #00f0c0; }
-  .btn-ghost { background: transparent; }
-  .btn-danger:hover { border-color: var(--danger); color: var(--danger); }
-  .btn-sm { padding: 6px 10px; font-size: 11px; }
-  .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+/* ── BADGES ── */
+.bdg {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 700;
+  padding: 3px 9px; border-radius: 20px; white-space: nowrap;
+}
+.bd { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.b-draft { background: var(--s3); color: var(--t2); }
+.b-sub   { background: #dbeafe; color: #1e40af; }
+.b-chk   { background: #e0e7ff; color: #3730a3; }
+.b-pap   { background: #fef3c7; color: #92400e; }
+.b-app   { background: var(--teal2); color: var(--teal); }
+.b-paid  { background: var(--green3); color: var(--green); }
+.b-rej   { background: var(--red3); color: var(--red); }
+.b-urg   { background: var(--orange2); color: var(--orange); border: 1px solid #fed7aa; }
 
-  /* WORDS DISPLAY */
-  .words-display {
-    background: var(--panel-2); border: 1px dashed var(--border); border-radius: 8px;
-    padding: 11px; font-family: 'Fraunces', serif; font-style: italic; font-size: 13px;
-    color: var(--accent); min-height: 42px; line-height: 1.5;
-  }
-  .words-dhivehi {
-    direction: rtl; font-style: normal; font-family: 'Faruma', 'A_Faruma', system-ui, sans-serif;
-    color: var(--accent-2); font-size: 15px; text-align: right;
-    margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border);
-  }
+/* ── CARDS ── */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r2); overflow: hidden; margin-bottom: 14px;
+}
+.ch {
+  padding: 12px 18px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; flex-wrap: wrap;
+}
+.ct { font-size: 13px; font-weight: 700; color: var(--text); }
+.cs { font-size: 11px; color: var(--t2); margin-top: 2px; }
+.cb { padding: 16px 18px; }
+.cb-tight { padding: 12px 18px; }
 
-  /* PREVIEW */
-  main.preview-area {
-    padding: 28px; overflow: auto;
-    display: flex; flex-direction: column; align-items: center; gap: 20px;
-  }
-  .preview-controls {
-    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
-    width: 100%; max-width: 800px;
-  }
-  .zoom-display {
-    font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-dim);
-    padding: 6px 10px; background: var(--panel-2); border-radius: 6px;
-  }
+/* ── STAT CARDS ── */
+.sgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 14px; }
+.sc { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r2); padding: 14px 16px; position: relative; overflow: hidden; }
+.sc::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.sc.bl::before { background: var(--blue); }
+.sc.gr::before { background: var(--green); }
+.sc.am::before { background: #d97706; }
+.sc.te::before { background: var(--teal); }
+.sc.or::before { background: var(--orange); }
+.sl { font-size: 10px; font-weight: 600; color: var(--t2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .04em; }
+.sv { font-size: 22px; font-weight: 800; color: var(--text); line-height: 1.1; word-break: break-all; }
+.ss { font-size: 10px; color: var(--t3); margin-top: 5px; }
 
-  /* CHEQUE */
-  .cheque-wrapper {
-    background: white; padding: 0; border-radius: 4px;
-    box-shadow: var(--shadow);
-    transform-origin: top center;
-    transition: transform 0.2s;
-  }
-  .cheque {
-    width: 178mm; height: 84mm;
-    background: var(--paper);
-    background-image:
-      linear-gradient(135deg, rgba(0,0,0,0.02) 0%, transparent 30%),
-      repeating-linear-gradient(45deg, transparent 0, transparent 8px, rgba(0,0,0,0.015) 8px, rgba(0,0,0,0.015) 9px);
-    position: relative;
-    font-family: 'JetBrains Mono', monospace;
-    color: var(--paper-ink);
-    overflow: hidden;
-    border: 1px solid #d4c89a;
-  }
+/* ── ALERTS ── */
+.al { border-radius: var(--r); padding: 10px 14px; font-size: 12px; margin-bottom: 12px; border-left: 3px solid; line-height: 1.5; }
+.al-i { background: var(--blue2); color: var(--blue); border-color: var(--blue); }
+.al-s { background: var(--green2); color: var(--green); border-color: var(--green); }
+.al-w { background: var(--amber2); color: var(--amber); border-color: #d97706; }
+.al-r { background: var(--red2); color: var(--red); border-color: var(--red); }
 
-  /* Bank template (off by default) */
-  .cheque-header {
-    position: absolute; top: 0; left: 0; right: 0; height: 22mm;
-    padding: 4mm 6mm;
-    display: flex; justify-content: space-between; align-items: flex-start;
-  }
-  .bank-name {
-    font-family: 'Fraunces', serif; font-weight: 800; font-size: 14pt;
-    color: var(--bank-color, #1a2742); line-height: 1.1;
-  }
-  .bank-tagline {
-    font-family: 'Inter', sans-serif; font-size: 7pt; color: #5a6478;
-    margin-top: 2px; letter-spacing: 0.1em; text-transform: uppercase;
-  }
-  .cheque-meta { text-align: right; font-family: 'Inter', sans-serif; font-size: 7pt; color: #5a6478; }
+/* ── FORMS ── */
+.fg { margin-bottom: 12px; }
+.fl { display: block; font-size: 11px; font-weight: 700; color: var(--t2); margin-bottom: 5px; }
+.fl .req { color: var(--red); margin-left: 2px; }
+.fl .val { float: right; font-family: 'Courier New', monospace; font-size: 10px; font-weight: 600; color: var(--blue); }
+.fi, .fs, .fta {
+  width: 100%; font-size: 12px; padding: 8px 11px;
+  border-radius: var(--r); border: 1px solid var(--border2);
+  background: var(--surface); color: var(--text); outline: none;
+  transition: border-color .12s, box-shadow .12s; font-family: inherit;
+}
+.fi:focus, .fs:focus, .fta:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(24,73,169,.08); }
+.fi:disabled { background: var(--s2); color: var(--t3); cursor: not-allowed; }
+.fta { resize: vertical; min-height: 56px; font-family: 'Courier New', monospace; }
+.fg2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.fg3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.fhint { font-size: 11px; color: var(--t2); margin-top: 4px; line-height: 1.4; }
+.fhint code { background: var(--s2); padding: 1px 5px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 10px; }
 
-  /* CHEQUE BACKGROUND */
-  .bg-status { display: flex; gap: 12px; align-items: stretch; }
-  .bg-preview {
-    flex: 1; height: 60px; background: var(--panel-2); border: 1px dashed var(--border);
-    border-radius: 6px; overflow: hidden; position: relative;
-    background-size: cover; background-position: center;
-  }
-  .bg-empty {
-    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-    color: var(--ink-dim); font-size: 11px; font-style: italic;
-  }
-  .bg-preview.has-image .bg-empty { display: none; }
-  .bg-actions { display: flex; flex-direction: column; gap: 4px; justify-content: center; }
+/* ── TOGGLE SWITCH ── */
+.tgl { display: flex; align-items: center; gap: 10px; padding: 8px 11px; background: var(--s2); border-radius: var(--r); border: 1px solid var(--border); cursor: pointer; user-select: none; }
+.tgl input { display: none; }
+.tgl-label { display: inline-flex; align-items: center; gap: 9px; cursor: pointer; font-size: 12px; color: var(--text); flex: 1; }
+.tgl-switch { width: 30px; height: 17px; background: var(--border2); border-radius: 17px; position: relative; transition: background .15s; flex-shrink: 0; }
+.tgl-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 13px; height: 13px; background: #fff; border-radius: 50%; transition: transform .15s; box-shadow: 0 1px 2px rgba(0,0,0,.15); }
+.tgl input:checked + .tgl-label .tgl-switch { background: var(--blue); }
+.tgl input:checked + .tgl-label .tgl-switch::after { transform: translateX(13px); }
 
-  /* CHEQUE BACKGROUND IMAGE OVERLAY */
-  .cheque-bg {
-    position: absolute; inset: 0; width: 100%; height: 100%;
-    background-size: contain; background-repeat: no-repeat; background-position: center;
-    pointer-events: none; z-index: 0;
-    opacity: 0.6;
-  }
-  body.print-with-bg .cheque-bg { opacity: 1 !important; }
+/* ── TABLES ── */
+.tw { overflow-x: auto; }
+table.t { width: 100%; border-collapse: collapse; }
+table.t th {
+  text-align: left; font-size: 10px; font-weight: 700; color: var(--t3);
+  padding: 9px 13px; border-bottom: 1px solid var(--border);
+  text-transform: uppercase; letter-spacing: .06em; white-space: nowrap; background: var(--s2);
+}
+table.t td { padding: 10px 13px; border-bottom: 1px solid var(--border); font-size: 12px; color: var(--text); vertical-align: middle; }
+table.t tr:last-child td { border-bottom: none; }
+table.t tr:hover td { background: var(--s2); }
+.mono { font-family: 'Courier New', monospace; font-size: 11px; font-weight: 700; letter-spacing: .02em; color: var(--blue3); }
+.num { font-family: 'Courier New', monospace; font-weight: 700; text-align: right; }
 
-  /* FIELD BOX with width and resize */
-  .field-box {
-    position: absolute;
-    padding: 0.5mm 1.5mm;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11pt;
-    color: var(--paper-ink);
-    cursor: move;
-    border: 1px dashed transparent;
-    white-space: nowrap;
-    user-select: none;
-    min-height: 5mm;
-    display: flex; align-items: center;
-    z-index: 2;
-    overflow: hidden;
-  }
-  .field-box.field-multiline { white-space: normal; line-height: 1.2; align-items: flex-start; }
-  .field-box.edit-mode {
-    border-color: rgba(0,150,200,0.5);
-    background: rgba(0,150,200,0.06);
-    overflow: visible;
-  }
-  .field-box.edit-mode:hover { background: rgba(0,150,200,0.12); }
-  .field-box.dragging { opacity: 0.85; border-color: var(--accent); border-style: solid; }
-  .field-box.resizing { border-color: var(--accent-2); border-style: solid; }
-  .field-box .resize-handle {
-    position: absolute; right: -4px; bottom: -4px;
-    width: 12px; height: 12px;
-    background: #0096c8; border: 2px solid white; border-radius: 50%;
-    cursor: nwse-resize; display: none; z-index: 3;
-  }
-  .field-box.edit-mode .resize-handle { display: block; }
-  .field-box .field-content {
-    display: inline-block; width: 100%;
-    transform-origin: left center;
-  }
-  .field-box.field-multiline .field-content { transform-origin: left top; }
-  .field-box .label-tag {
-    position: absolute; top: -14px; left: 0; font-size: 8px; color: #0096c8;
-    font-family: 'Inter', sans-serif; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;
-    background: white; padding: 1px 4px; border-radius: 3px; opacity: 0; transition: opacity 0.15s;
-    pointer-events: none;
-  }
-  .field-box.edit-mode .label-tag { opacity: 1; }
+/* ── PILL FILTER (Entity Bar) ── */
+.ebar { display: flex; gap: 6px; flex-wrap: wrap; }
+.ebt {
+  padding: 5px 13px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  border: 1px solid var(--border); background: var(--surface); color: var(--t2);
+  cursor: pointer; transition: all .12s; font-family: inherit;
+}
+.ebt:hover { border-color: var(--blue); color: var(--blue); }
+.ebt.on { background: var(--blue); color: #fff; border-color: var(--blue); }
 
-  .field-payee { font-size: 11pt; }
-  .field-words { font-size: 10pt; font-style: italic; }
-  .field-words-dv { font-size: 11pt; font-family: 'Faruma', 'A_Faruma', system-ui, sans-serif; direction: rtl; font-style: normal; }
-  .field-amount { font-size: 12pt; font-weight: 600; padding: 1mm 3mm; background: rgba(0,0,0,0.03); border-radius: 2px; }
-  .field-date { font-size: 11pt; letter-spacing: 0.15em; }
-  .field-signature { font-size: 9pt; font-family: 'Fraunces', serif; font-style: italic; }
-  .field-account-payee {
-    font-size: 7pt; font-family: 'Inter', sans-serif; font-weight: 700;
-    letter-spacing: 0.1em;
-  }
-  .field-account-payee .ac-stamp {
-    border: 1.5px solid currentColor; padding: 1mm 2mm; border-radius: 1mm;
-    display: inline-block; text-align: center; line-height: 1.2;
-  }
-  .field-account-payee.style-stamp-rotated .ac-stamp {
-    transform: rotate(-12deg);
-  }
-  .field-account-payee.style-parallel-lines .ac-stamp {
-    border: none; padding: 1mm 0;
-    border-top: 1.2pt solid currentColor;
-    border-bottom: 1.2pt solid currentColor;
-    border-radius: 0;
-    padding-left: 3mm; padding-right: 3mm;
-  }
-  .field-account-payee.style-plain .ac-stamp {
-    border: none; padding: 0; font-style: italic;
-  }
-  .field-account-payee.pos-across-top {
-    width: 80mm; transform-origin: left top;
-  }
-  .field-account-payee.pos-across-payee .ac-stamp {
-    font-size: 8pt;
-  }
+/* ── RANGE / SLIDER ── */
+input[type="range"] {
+  width: 100%; height: 4px; background: var(--s3); border-radius: 4px;
+  outline: none; -webkit-appearance: none; appearance: none; padding: 0;
+  cursor: pointer; margin: 6px 0;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--blue); border: 2px solid var(--surface);
+  cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--blue); border: 2px solid var(--surface); cursor: pointer;
+}
 
-  .cheque-lines {
-    position: absolute; inset: 22mm 6mm 12mm 6mm;
-    pointer-events: none; z-index: 0;
-  }
-  .cheque-lines .line {
-    position: absolute; left: 0; right: 0; height: 1px;
-    background: repeating-linear-gradient(to right, var(--paper-line) 0, var(--paper-line) 4px, transparent 4px, transparent 7px);
-  }
+/* ── ZOOM / PREVIEW CONTROLS ── */
+.preview-controls {
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  margin-bottom: 14px; padding: 8px 10px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+}
+.zoom-val { font-family: 'Courier New', monospace; font-size: 11px; color: var(--t2); padding: 4px 8px; background: var(--s2); border-radius: 4px; min-width: 50px; text-align: center; }
 
-  .micr-strip {
-    position: absolute; bottom: 0; left: 0; right: 0; height: 10mm;
-    padding: 2mm 6mm; font-family: 'Courier New', monospace; font-size: 10pt;
-    letter-spacing: 0.2em; color: var(--paper-ink);
-    border-top: 1px solid rgba(0,0,0,0.1);
-    display: flex; align-items: center; gap: 10mm;
-  }
-  .micr-strip span::before, .micr-strip span::after { content: '⑆'; margin: 0 4px; color: #666; }
+/* ── CHEQUE PREVIEW ── */
+.cheque-stage { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r2); }
+.cheque-wrapper {
+  background: #fff; border-radius: 4px;
+  box-shadow: 0 4px 18px rgba(13,45,110,.12), 0 1px 4px rgba(0,0,0,.08);
+  transform-origin: top center; transition: transform .2s;
+}
+.cheque {
+  width: 178mm; height: 84mm; background: var(--paper);
+  background-image:
+    linear-gradient(135deg, rgba(0,0,0,0.02) 0%, transparent 30%),
+    repeating-linear-gradient(45deg, transparent 0, transparent 8px, rgba(0,0,0,0.015) 8px, rgba(0,0,0,0.015) 9px);
+  position: relative; font-family: 'Courier New', monospace;
+  color: var(--paper-ink); overflow: hidden;
+  border: 1px solid #e5d9a8;
+}
 
-  .currency-tag {
-    font-size: 10pt; font-weight: 700;
-    color: var(--paper-ink); font-family: 'Inter', sans-serif;
-    margin-right: 3mm;
-  }
+.cheque-bg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  background-size: contain; background-repeat: no-repeat; background-position: center;
+  pointer-events: none; z-index: 0; opacity: 0.6;
+}
 
-  /* REGISTER TABLE */
-  .register-container {
-    width: 100%; max-width: 1200px; margin: 0 auto;
-  }
-  .register-controls {
-    display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap;
-  }
-  .register-search {
-    flex: 1; min-width: 200px;
-  }
-  .register-stats {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 12px; margin-bottom: 20px;
-  }
-  .stat-card {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
-    padding: 16px 18px;
-  }
-  .stat-label { font-size: 11px; color: var(--ink-dim); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; margin-bottom: 6px; }
-  .stat-value { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 700; }
-  .stat-detail { font-size: 11px; color: var(--ink-dim); font-family: 'JetBrains Mono', monospace; margin-top: 4px; }
+.cheque-header {
+  position: absolute; top: 0; left: 0; right: 0; height: 22mm;
+  padding: 4mm 6mm; display: flex; justify-content: space-between; align-items: flex-start;
+}
+.bank-name { font-family: 'Segoe UI', sans-serif; font-weight: 800; font-size: 14pt; color: var(--bank-color, var(--blue3)); line-height: 1.1; }
+.bank-tagline { font-family: 'Segoe UI', sans-serif; font-size: 7pt; color: #5a6478; margin-top: 2px; letter-spacing: .1em; text-transform: uppercase; }
+.cheque-meta { text-align: right; font-family: 'Segoe UI', sans-serif; font-size: 7pt; color: #5a6478; }
 
-  table.register-table {
-    width: 100%; border-collapse: separate; border-spacing: 0;
-    background: var(--panel); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
-  }
-  .register-table th {
-    background: var(--panel-2); padding: 12px 14px; text-align: left;
-    font-size: 11px; font-weight: 700; color: var(--ink-dim);
-    text-transform: uppercase; letter-spacing: 0.08em;
-    border-bottom: 1px solid var(--border);
-  }
-  .register-table td {
-    padding: 12px 14px; font-size: 13px; border-bottom: 1px solid var(--border);
-  }
-  .register-table tr:last-child td { border-bottom: none; }
-  .register-table tr:hover td { background: var(--panel-2); }
-  .register-table .amount-cell { font-family: 'JetBrains Mono', monospace; font-weight: 600; text-align: right; }
-  .register-table .action-cell { display: flex; gap: 4px; justify-content: flex-end; }
-  .pill {
-    display: inline-block; padding: 2px 8px; border-radius: 12px;
-    font-size: 10px; font-weight: 700; letter-spacing: 0.05em;
-    background: var(--panel-3); color: var(--ink-dim);
-  }
-  .pill-mvr { background: rgba(0,212,168,0.15); color: var(--accent); }
-  .pill-usd { background: rgba(255,184,58,0.15); color: var(--accent-2); }
-  .pill-inr { background: rgba(255,85,119,0.15); color: var(--danger); }
-  .register-empty { padding: 60px 20px; text-align: center; color: var(--ink-dim); font-style: italic; }
+.cheque-lines { position: absolute; inset: 22mm 6mm 12mm 6mm; pointer-events: none; z-index: 0; }
+.cheque-lines .line {
+  position: absolute; left: 0; right: 0; height: 1px;
+  background: repeating-linear-gradient(to right, var(--paper-line) 0, var(--paper-line) 4px, transparent 4px, transparent 7px);
+}
 
-  /* FONT SIZE CONTROLS */
-  input[type="range"] {
-    width: 100%; height: 4px; background: var(--panel-3); border-radius: 4px;
-    outline: none; -webkit-appearance: none; appearance: none; padding: 0;
-    cursor: pointer; margin: 6px 0;
-  }
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none; appearance: none;
-    width: 16px; height: 16px; border-radius: 50%;
-    background: var(--accent); border: 2px solid var(--bg);
-    cursor: pointer;
-  }
-  input[type="range"]::-moz-range-thumb {
-    width: 16px; height: 16px; border-radius: 50%;
-    background: var(--accent); border: 2px solid var(--bg);
-    cursor: pointer;
-  }
-  .font-row {
-    display: grid; grid-template-columns: 1fr 60px; gap: 10px; align-items: center;
-    padding: 6px 0; border-bottom: 1px solid var(--border);
-  }
-  .font-row:last-child { border-bottom: none; }
-  .font-row-label { font-size: 11px; color: var(--ink-dim); font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
-  .font-row-slider input[type="range"] { margin: 0; }
-  .font-row-value {
-    font-family: 'JetBrains Mono', monospace; font-size: 11px;
-    background: var(--panel-2); padding: 4px 6px; border-radius: 4px;
-    text-align: center; color: var(--accent);
-  }
-  .font-value {
-    float: right; font-family: 'JetBrains Mono', monospace; font-size: 11px;
-    background: var(--panel-2); padding: 2px 6px; border-radius: 4px;
-    color: var(--accent); font-weight: 500;
-  }
-  .payee-combo { position: relative; display: flex; gap: 6px; }
-  .payee-combo input { flex: 1; }
-  .payee-save-btn {
-    width: 36px; flex-shrink: 0;
-    background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px;
-    color: var(--accent); font-size: 18px; font-weight: 700;
-    cursor: pointer; transition: all 0.15s;
-  }
-  .payee-save-btn:hover { background: var(--accent); color: #0e1116; border-color: var(--accent); }
-  .payee-suggestions {
-    position: absolute; top: calc(100% + 4px); left: 0; right: 42px;
-    background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
-    box-shadow: var(--shadow);
-    max-height: 240px; overflow-y: auto;
-    z-index: 20; display: none;
-  }
-  .payee-suggestions.show { display: block; }
-  .payee-suggestion {
-    padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--border);
-    transition: background 0.1s;
-  }
-  .payee-suggestion:last-child { border-bottom: none; }
-  .payee-suggestion:hover, .payee-suggestion.highlighted { background: var(--panel-2); }
-  .payee-suggestion .ps-name { font-weight: 600; font-size: 13px; color: var(--ink); }
-  .payee-suggestion .ps-meta { font-size: 11px; color: var(--ink-dim); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
-  .payee-suggestion-empty { padding: 12px; color: var(--ink-dim); font-style: italic; font-size: 12px; text-align: center; }
+.micr-strip {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 10mm;
+  padding: 2mm 6mm; font-family: 'Courier New', monospace; font-size: 10pt;
+  letter-spacing: .2em; color: var(--paper-ink); border-top: 1px solid rgba(0,0,0,.1);
+  display: flex; align-items: center; gap: 10mm;
+}
+.micr-strip span::before, .micr-strip span::after { content: '⑆'; margin: 0 4px; color: #666; }
 
-  /* PAYEE STATUS HINT */
-  #payee-status { color: var(--ink-dim); }
-  #payee-status.is-saved { color: var(--accent); }
-  #payee-status.is-new { color: var(--accent-2); }
+/* ── FIELD BOX ── */
+.field-box {
+  position: absolute; padding: 0.5mm 1.5mm;
+  font-family: 'Courier New', monospace; font-size: 11pt;
+  color: var(--paper-ink); cursor: move; border: 1px dashed transparent;
+  white-space: nowrap; user-select: none; min-height: 5mm;
+  display: flex; align-items: center; z-index: 2; overflow: hidden;
+}
+.field-box.field-multiline { white-space: normal; line-height: 1.2; align-items: flex-start; }
+.field-box.edit-mode { border-color: rgba(24,73,169,.55); background: rgba(24,73,169,.05); overflow: visible; }
+.field-box.edit-mode:hover { background: rgba(24,73,169,.1); }
+.field-box.dragging { opacity: .85; border-color: var(--blue); border-style: solid; }
+.field-box.resizing { border-color: var(--orange); border-style: solid; }
+.field-box .resize-handle {
+  position: absolute; right: -4px; bottom: -4px;
+  width: 12px; height: 12px; background: var(--blue);
+  border: 2px solid #fff; border-radius: 50%;
+  cursor: nwse-resize; display: none; z-index: 3;
+}
+.field-box.edit-mode .resize-handle { display: block; }
+.field-box .field-content { display: inline-block; width: 100%; transform-origin: left center; }
+.field-box.field-multiline .field-content { transform-origin: left top; }
+.field-box .label-tag {
+  position: absolute; top: -14px; left: 0; font-size: 8px; color: var(--blue);
+  font-family: 'Segoe UI', sans-serif; font-weight: 700; text-transform: uppercase; letter-spacing: .1em;
+  background: #fff; padding: 1px 5px; border-radius: 3px; opacity: 0;
+  transition: opacity .15s; pointer-events: none; border: 1px solid var(--blue2);
+}
+.field-box.edit-mode .label-tag { opacity: 1; }
 
-  /* PAYEES TAB */
-  .payees-container { width: 100%; max-width: 1100px; margin: 0 auto; }
-  .payees-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;
-  }
-  .payee-card {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
-    padding: 16px 18px; transition: all 0.15s;
-  }
-  .payee-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-  .payee-card .pc-name { font-family: 'Fraunces', serif; font-weight: 700; font-size: 18px; margin-bottom: 4px; }
-  .payee-card .pc-meta { font-size: 12px; color: var(--ink-dim); font-family: 'JetBrains Mono', monospace; margin-bottom: 6px; }
-  .payee-card .pc-bank { display: inline-block; padding: 2px 8px; border-radius: 12px; background: var(--panel-3); font-size: 10px; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 8px; }
-  .payee-card .pc-notes { font-size: 12px; color: var(--ink-dim); line-height: 1.5; margin: 6px 0 10px; min-height: 18px; }
-  .payee-card .pc-stats { font-size: 11px; color: var(--ink-dim); margin-bottom: 12px; padding-top: 8px; border-top: 1px dashed var(--border); }
-  .payee-card .pc-actions { display: flex; gap: 6px; }
+/* Field-type variants */
+.field-payee { font-size: 11pt; }
+.field-words { font-size: 10pt; font-style: italic; }
+.field-words-dv { font-size: 11pt; font-family: 'Faruma', 'A_Faruma', system-ui, sans-serif; direction: rtl; font-style: normal; }
+.field-amount { font-size: 12pt; font-weight: 600; padding: 1mm 3mm; background: rgba(0,0,0,.03); border-radius: 2px; }
+.field-date { font-size: 11pt; letter-spacing: .15em; }
+.field-signature { font-size: 9pt; font-family: 'Segoe UI', serif; font-style: italic; }
+.field-account-payee { font-size: 7pt; font-family: 'Segoe UI', sans-serif; font-weight: 700; letter-spacing: .1em; }
+.field-account-payee .ac-stamp { border: 1.5px solid currentColor; padding: 1mm 2mm; border-radius: 1mm; display: inline-block; text-align: center; line-height: 1.2; }
+.field-account-payee.style-stamp-rotated .ac-stamp { transform: rotate(-12deg); }
+.field-account-payee.style-parallel-lines .ac-stamp { border: none; padding: 1mm 0; border-top: 1.2pt solid currentColor; border-bottom: 1.2pt solid currentColor; border-radius: 0; padding-left: 3mm; padding-right: 3mm; }
+.field-account-payee.style-plain .ac-stamp { border: none; padding: 0; font-style: italic; }
 
-  /* PAYEE FORM MODAL */
-  .modal-form .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .modal-form .field { margin-bottom: 12px; }
-  .toast {
-    position: fixed; bottom: 24px; right: 24px; background: var(--panel-2);
-    border: 1px solid var(--accent); border-radius: 10px;
-    padding: 12px 18px; font-size: 13px; font-weight: 500;
-    box-shadow: var(--shadow); z-index: 1000;
-    transform: translateY(100px); opacity: 0; transition: all 0.3s;
-  }
-  .toast.show { transform: translateY(0); opacity: 1; }
-  .modal-backdrop {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
-    z-index: 100; display: none; align-items: center; justify-content: center; padding: 20px;
-  }
-  .modal-backdrop.show { display: flex; }
-  .modal {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
-    padding: 28px; max-width: 520px; width: 100%; max-height: 80vh; overflow-y: auto;
-  }
-  .modal h3 { font-family: 'Fraunces', serif; font-weight: 600; margin-bottom: 14px; font-size: 22px; }
+.currency-tag { font-size: 10pt; font-weight: 700; color: var(--paper-ink); font-family: 'Segoe UI', sans-serif; margin-right: 3mm; }
 
-  .mode-pill {
-    display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px;
-    background: rgba(0,212,168,0.15); border: 1px solid var(--accent); border-radius: 20px;
-    font-size: 10px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em;
-  }
-  .mode-pill .dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: pulse 1.5s infinite; }
-  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+/* ── BACKGROUND PREVIEW (sidebar) ── */
+.bg-preview-mini {
+  width: 100%; height: 50px; background: var(--s2); border: 1px dashed var(--border2);
+  border-radius: var(--r); overflow: hidden; position: relative;
+  background-size: cover; background-position: center; margin-bottom: 8px;
+}
+.bg-empty {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: var(--t3); font-size: 11px; font-style: italic;
+}
+.bg-preview-mini.has-image .bg-empty { display: none; }
 
-  /* TOGGLE */
-  .toggle-switch { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--panel-2); border-radius: 8px; border: 1px solid var(--border); }
-  .toggle-switch input { display: none; }
-  .toggle-switch label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; margin: 0; text-transform: none; letter-spacing: normal; font-size: 12px; color: var(--ink); }
-  .toggle-switch .switch { width: 30px; height: 17px; background: var(--border); border-radius: 17px; position: relative; transition: background 0.2s; }
-  .toggle-switch .switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 13px; height: 13px; background: white; border-radius: 50%; transition: transform 0.2s; }
-  .toggle-switch input:checked + label .switch { background: var(--accent); }
-  .toggle-switch input:checked + label .switch::after { transform: translateX(13px); }
+/* ── FONT SIZE ROWS ── */
+.fontrow { display: grid; grid-template-columns: 1fr 56px; gap: 10px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.fontrow:last-child { border-bottom: none; }
+.fontrow-label { font-size: 11px; color: var(--t2); font-weight: 600; }
+.fontrow-val { font-family: 'Courier New', monospace; font-size: 11px; background: var(--s2); padding: 4px 6px; border-radius: 4px; text-align: center; color: var(--blue); }
 
-  .helper-text { font-size: 11px; color: var(--ink-dim); margin-top: 6px; line-height: 1.5; }
+/* ── PAYEE COMBO ── */
+.payee-combo { position: relative; display: flex; gap: 6px; }
+.payee-combo input { flex: 1; }
+.payee-save-btn {
+  width: 34px; flex-shrink: 0;
+  background: var(--surface); border: 1px solid var(--border2); border-radius: var(--r);
+  color: var(--blue); font-size: 16px; font-weight: 700; cursor: pointer; transition: all .12s;
+}
+.payee-save-btn:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
+.payee-suggestions {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 40px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+  box-shadow: 0 8px 24px rgba(13,45,110,.15);
+  max-height: 240px; overflow-y: auto; z-index: 20; display: none;
+}
+.payee-suggestions.show { display: block; }
+.payee-suggestion { padding: 9px 12px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background .1s; }
+.payee-suggestion:last-child { border-bottom: none; }
+.payee-suggestion:hover { background: var(--blue2); }
+.ps-name { font-weight: 700; font-size: 12px; color: var(--text); }
+.ps-meta { font-size: 10px; color: var(--t2); margin-top: 2px; font-family: 'Courier New', monospace; }
+.payee-suggestion-empty { padding: 12px; color: var(--t3); font-style: italic; font-size: 11px; text-align: center; }
 
-  /* PRINT */
-  /* PRINT PREVIEW MODE — clean view simulating what will print */
-  body.preview-mode .field-box { border-color: transparent !important; background: transparent !important; }
-  body.preview-mode .field-box .label-tag { display: none !important; }
-  body.preview-mode .field-box .resize-handle { display: none !important; }
-  body.preview-mode .cheque-lines { display: none !important; }
-  body.preview-mode .field-amount { background: transparent !important; }
-  body.preview-mode .cheque {
-    background-image: none !important;
-    background: white !important;
-  }
-  body.preview-mode #cheque-wrapper {
-    border: 1px solid #ccc;
-    background: white;
-  }
-  body.preview-mode .cheque-bg {
-    opacity: 1 !important;
-    /* show in preview-mode only if bg-print toggle is on */
+#payee-status { font-size: 11px; color: var(--t2); margin-top: 4px; }
+#payee-status.is-saved { color: var(--green); }
+#payee-status.is-new { color: var(--orange); }
+
+/* ── PAYEE CARDS GRID ── */
+.payees-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.payee-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r2); padding: 14px 16px; transition: all .12s; }
+.payee-card:hover { border-color: var(--blue); box-shadow: 0 4px 12px rgba(24,73,169,.08); }
+.pc-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; color: var(--text); }
+.pc-meta { font-size: 11px; color: var(--t2); font-family: 'Courier New', monospace; margin-bottom: 6px; }
+.pc-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px; }
+.pc-notes { font-size: 11px; color: var(--t2); line-height: 1.4; min-height: 16px; margin: 4px 0 8px; }
+.pc-stats { font-size: 10px; color: var(--t3); padding-top: 8px; border-top: 1px dashed var(--border); margin-bottom: 10px; }
+.pc-actions { display: flex; gap: 5px; }
+
+/* ── MODAL ── */
+.modal-bd { position: fixed; inset: 0; background: rgba(13,45,110,.45); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px; }
+.modal-bd.show { display: flex; }
+.modal {
+  background: var(--surface); border-radius: var(--r2);
+  max-width: 560px; width: 100%; max-height: 85vh; display: flex; flex-direction: column;
+  box-shadow: 0 20px 60px rgba(13,45,110,.25);
+}
+.mh { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.mh h3 { font-size: 15px; font-weight: 800; color: var(--blue3); }
+.mh-close { background: none; border: none; color: var(--t3); cursor: pointer; font-size: 18px; padding: 0 4px; line-height: 1; }
+.mh-close:hover { color: var(--red); }
+.mb { padding: 18px 20px; overflow-y: auto; flex: 1; }
+.mf { padding: 12px 20px; border-top: 1px solid var(--border); background: var(--s2); display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 20px; right: 20px;
+  background: var(--text); color: #fff; border-radius: var(--r);
+  padding: 10px 16px; font-size: 12px; font-weight: 500;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25); z-index: 1100;
+  transform: translateY(80px); opacity: 0; transition: all .25s;
+  border-left: 3px solid var(--green);
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.err { border-left-color: var(--red); }
+
+/* ── PRINT PREVIEW MODE ── */
+body.preview-mode .field-box { border-color: transparent !important; background: transparent !important; }
+body.preview-mode .field-box .label-tag { display: none !important; }
+body.preview-mode .field-box .resize-handle { display: none !important; }
+body.preview-mode .cheque-lines { display: none !important; }
+body.preview-mode .field-amount { background: transparent !important; }
+body.preview-mode .cheque { background-image: none !important; background: #fff !important; }
+body.preview-mode .cheque-bg { opacity: 1 !important; display: none !important; }
+body.preview-mode.print-with-bg .cheque-bg { display: block !important; }
+
+/* ── PRINT ── */
+@media print {
+  @page { size: 178mm 84mm; margin: 0; }
+  html, body { background: #fff !important; }
+  .topbar, .sidebar, .preview-controls, .ph, .field-box .label-tag,
+  .cheque-lines, .toast, .modal-bd, #register-view, #payees-view,
+  .cheque-stage > p, .resize-handle {
     display: none !important;
   }
-  body.preview-mode.print-with-bg .cheque-bg { display: block !important; }
-
-  @media print {
-    @page { size: 178mm 84mm; margin: 0; }
-    html, body { background: white !important; }
-    header.app-header, aside.sidebar, .preview-controls, .field-box .label-tag,
-    .cheque-lines, .toast, .modal-backdrop, #register-view, #payees-view,
-    .resize-handle {
-      display: none !important;
-    }
-    main.preview-area { padding: 0 !important; }
-    .cheque-wrapper {
-      box-shadow: none !important; border: none !important;
-      transform: none !important; page-break-after: avoid;
-    }
-    .cheque {
-      border: none !important;
-      background-image: none !important;
-      background: white !important;
-      width: 178mm; height: 84mm;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
-    .field-box { border: none !important; background: transparent !important; }
-    .field-amount { background: transparent !important; }
-    .cheque-header, .micr-strip { display: none !important; }
-    body.print-with-template .cheque-header,
-    body.print-with-template .micr-strip { display: flex !important; }
-    /* Background image: hide by default during print, show only if user opted in */
-    .cheque-bg { display: none !important; }
-    body.print-with-bg .cheque-bg {
-      display: block !important;
-      opacity: 1 !important;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
+  .main { padding: 0 !important; max-height: none !important; overflow: visible !important; }
+  .app-body { display: block !important; }
+  .cheque-stage { padding: 0 !important; border: none !important; background: #fff !important; }
+  .cheque-wrapper { box-shadow: none !important; transform: none !important; }
+  .cheque {
+    border: none !important;
+    background-image: none !important;
+    background: #fff !important;
+    width: 178mm; height: 84mm;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
   }
+  .field-box { border: none !important; background: transparent !important; }
+  .field-amount { background: transparent !important; }
+  .cheque-header, .micr-strip { display: none !important; }
+  body.print-with-template .cheque-header,
+  body.print-with-template .micr-strip { display: flex !important; }
+  .cheque-bg { display: none !important; }
+  body.print-with-bg .cheque-bg {
+    display: block !important; opacity: 1 !important;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+}
 
-  /* SCROLLBAR */
-  ::-webkit-scrollbar { width: 8px; height: 8px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-  ::-webkit-scrollbar-thumb:hover { background: var(--ink-dim); }
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--s2); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--t3); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .app-body { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .sgrid { grid-template-columns: repeat(2, 1fr); }
+  .fg2, .fg3 { grid-template-columns: 1fr; }
+}
+
+/* SECTION HEADER inside cards */
+.section-h { font-size: 11px; font-weight: 800; color: var(--t2); text-transform: uppercase; letter-spacing: .08em; padding: 10px 18px 6px; border-top: 1px solid var(--border); background: var(--s2); }
+.section-h:first-child { border-top: none; }
+
+/* Small text utility */
+.help-text { font-size: 11px; color: var(--t2); margin-top: 5px; line-height: 1.4; }
+.text-mono-id { font-family: 'Courier New', monospace; font-weight: 700; color: var(--blue3); }
+
+/* Two-column working layout: form + preview */
+.work-grid { display: grid; grid-template-columns: 380px 1fr; gap: 14px; align-items: start; }
+@media (max-width: 1200px) { .work-grid { grid-template-columns: 1fr; } }
+.work-form { background: transparent; }
+
 </style>
 </head>
 <body>
 
-<header class="app-header">
-  <div class="brand">
-    <div class="brand-mark">ރ</div>
-    <div>
-      Cheque Printer Pro
-      <div class="brand-sub">Maldives Banks · Multi-Currency · Bilingual</div>
+<!-- ═══════════════════ TOPBAR ═══════════════════ -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-box">CP</div>
+    <div class="logo-text">
+      Cheque Printer
+      <small>Maldives Banks · Multi-Currency · Bilingual</small>
     </div>
   </div>
-  <div class="tabs" id="tabs">
-    <button class="tab active" data-tab="printer">🖋 Printer</button>
-    <button class="tab" data-tab="payees">👥 Payees</button>
-    <button class="tab" data-tab="register">📋 Register</button>
+  <div class="topbar-right">
+    <button class="btn btn-sm" onclick="openHelp()" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff">❔ Help</button>
+    <button class="btn btn-sm" id="print-btn" onclick="printCheque()" style="background:#fff;color:var(--blue3);border-color:#fff;font-weight:700">🖨 Print</button>
   </div>
-  <div class="header-actions">
-    <button class="btn" onclick="openHelp()">❔ Help</button>
-    <button class="btn btn-primary" onclick="printCheque()" id="print-btn">🖨 Print</button>
-  </div>
-</header>
+</div>
 
-<!-- PRINTER TAB -->
-<div class="app-grid" id="printer-view">
+<!-- ═══════════════════ APP BODY ═══════════════════ -->
+<div class="app-body">
 
-  <!-- SIDEBAR -->
+  <!-- ── SIDEBAR NAV ── -->
   <aside class="sidebar">
+    <div class="nav-sec">Main</div>
+    <div class="ni active" data-tab="printer" onclick="switchTab('printer')"><span class="ic">🖋</span>Printer</div>
+    <div class="ni" data-tab="payees" onclick="switchTab('payees')"><span class="ic">👥</span>Payees</div>
+    <div class="ni" data-tab="register" onclick="switchTab('register')"><span class="ic">📋</span>Register</div>
+    <div class="nav-sec">Quick Actions</div>
+    <div class="ni" onclick="document.getElementById('payee').focus(); switchTab('printer')"><span class="ic">＋</span>New Cheque</div>
+    <div class="ni" onclick="openPayeeForm()"><span class="ic">👤</span>Add Payee</div>
+    <div class="ni" onclick="exportCSV()"><span class="ic">⬇</span>Export Register</div>
+    <div class="nav-sec">About</div>
+    <div class="ni" onclick="openHelp()"><span class="ic">❔</span>Help &amp; Guide</div>
+  </aside>
 
-    <!-- Cheque Number & Bank -->
-    <div class="section">
-      <h2 class="section-title">Cheque Info</h2>
-      <div class="row-2">
-        <div class="field">
-          <label class="field-label" for="cheque-no">Cheque No.</label>
-          <input type="text" id="cheque-no" placeholder="000123" oninput="updateFields()">
+  <!-- ═══════════════════ MAIN ═══════════════════ -->
+  <main class="main">
+
+    <!-- ═══════════════════ PRINTER VIEW ═══════════════════ -->
+    <div id="printer-view">
+
+      <div class="ph">
+        <div>
+          <div class="pt">Cheque Printer</div>
+          <div class="ps">Compose a cheque, align fields to your real cheque, then print.</div>
         </div>
-        <div class="field">
-          <label class="field-label" for="date">Date</label>
-          <input type="date" id="date" oninput="updateFields()">
+        <div class="brow">
+          <button class="btn btn-sm" onclick="togglePrintPreview()" id="print-preview-btn">👁 Print Preview</button>
+          <button class="btn btn-sm" onclick="newCheque()">＋ Clear</button>
+          <button class="btn btn-p btn-sm" onclick="saveCheque()">💾 Save &amp; New</button>
         </div>
       </div>
-      <div class="toggle-switch" style="margin-top: 4px;">
-        <input type="checkbox" id="undated" onchange="onUndatedToggle()">
-        <label for="undated">
-          <span class="switch"></span>
-          <span>Leave undated (print blank or custom)</span>
-        </label>
+
+      <div class="work-grid">
+
+        <!-- ── LEFT: FORM ── -->
+        <div class="work-form">
+
+          <!-- Cheque Info Card -->
+          <div class="card">
+            <div class="ch">
+              <div><div class="ct">Cheque Info</div></div>
+            </div>
+            <div class="cb">
+              <div class="fg2">
+                <div class="fg">
+                  <label class="fl" for="cheque-no">Cheque No.</label>
+                  <input type="text" class="fi" id="cheque-no" placeholder="000123" oninput="updateFields()">
+                </div>
+                <div class="fg">
+                  <label class="fl" for="date">Date</label>
+                  <input type="date" class="fi" id="date" oninput="updateFields()">
+                </div>
+              </div>
+              <label class="tgl" style="margin-bottom:10px">
+                <input type="checkbox" id="undated" onchange="onUndatedToggle()">
+                <span class="tgl-label"><span class="tgl-switch"></span>Leave undated (print blank or custom)</span>
+              </label>
+              <div class="fg" id="undated-text-field" style="display:none">
+                <label class="fl" for="undated-text">Date Line Text (when undated)</label>
+                <select class="fs" id="undated-text" onchange="onUndatedTextChange()" style="margin-bottom:6px">
+                  <option value="">— Leave completely blank —</option>
+                  <option value="__ / __ / ____">__ / __ / ____</option>
+                  <option value="DATE: __________">DATE: __________</option>
+                  <option value="custom">Custom text…</option>
+                </select>
+                <input type="text" class="fi" id="undated-custom" placeholder="Custom date line text" oninput="updateFields()" style="display:none">
+              </div>
+              <div class="fg">
+                <label class="fl" for="bank">Bank</label>
+                <select class="fs" id="bank" onchange="onBankChange()">
+                  <option value="BML">Bank of Maldives (BML)</option>
+                  <option value="MIB">Maldives Islamic Bank (MIB)</option>
+                  <option value="CBM">Commercial Bank of Maldives (CBM)</option>
+                  <option value="BOC">Bank of Ceylon (BOC) — Malé</option>
+                  <option value="MCB">Mauritius Commercial Bank (MCB)</option>
+                  <option value="SBI">State Bank of India (SBI) — Malé</option>
+                  <option value="HDFC">HDFC Bank — Maldives</option>
+                  <option value="HBL">Habib Bank Limited (HBL)</option>
+                  <option value="HSBC">HSBC — Maldives</option>
+                  <option value="CUSTOM">Custom / Other</option>
+                </select>
+              </div>
+              <div class="fg2">
+                <div class="fg">
+                  <label class="fl" for="currency">Currency</label>
+                  <select class="fs" id="currency" onchange="updateFields()">
+                    <option value="MVR">MVR — Rufiyaa</option>
+                    <option value="USD">USD — Dollar</option>
+                    <option value="INR">INR — Rupee</option>
+                    <option value="EUR">EUR — Euro</option>
+                    <option value="GBP">GBP — Pound</option>
+                  </select>
+                </div>
+                <div class="fg" style="margin-bottom:0">
+                  <label class="fl" for="branch">Branch</label>
+                  <input type="text" class="fi" id="branch" placeholder="Malé Main" oninput="updateFields()">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pay To Card -->
+          <div class="card">
+            <div class="ch">
+              <div><div class="ct">Pay To</div></div>
+            </div>
+            <div class="cb">
+              <div class="fg">
+                <label class="fl" for="payee">Payee Name<span class="req">*</span></label>
+                <div class="payee-combo">
+                  <input type="text" class="fi" id="payee" placeholder="Type or pick a saved payee" oninput="onPayeeInput()" onfocus="showPayeeSuggestions()" onblur="hidePayeeSuggestions()" autocomplete="off">
+                  <button type="button" class="payee-save-btn" onclick="quickSavePayee()" title="Save to payee register">⊕</button>
+                  <div class="payee-suggestions" id="payee-suggestions"></div>
+                </div>
+                <div id="payee-status"></div>
+              </div>
+              <div class="fg">
+                <label class="fl" for="amount">Amount (figures)<span class="req">*</span></label>
+                <input type="number" class="fi" id="amount" step="0.01" min="0" placeholder="0.00" oninput="updateFields()">
+              </div>
+              <div class="fg">
+                <label class="fl">Amount in Words (auto-generated)</label>
+                <div class="al al-i" id="words-display" style="margin: 0; font-style: italic; min-height: 40px;">—</div>
+                <div class="fhint" id="dhivehi-hint" style="display:none">📝 Dhivehi (Thaana) shown when MVR is selected. Toggle below to include on cheque.</div>
+              </div>
+              <div class="fg">
+                <label class="fl" for="memo">Memo / For (optional)</label>
+                <input type="text" class="fi" id="memo" placeholder="Invoice #1234" oninput="updateFields()">
+              </div>
+            </div>
+            <div class="section-h">Crossing &amp; Endorsement</div>
+            <div class="cb-tight">
+              <label class="tgl" style="margin-bottom:10px">
+                <input type="checkbox" id="crossing-on" checked onchange="onCrossingToggle()">
+                <span class="tgl-label"><span class="tgl-switch"></span>Print crossing on cheque</span>
+              </label>
+              <div id="crossing-options">
+                <div class="fg">
+                  <label class="fl" for="crossing-preset">Preset</label>
+                  <select class="fs" id="crossing-preset" onchange="onCrossingPresetChange()">
+                    <option value="ac-payee">A/C Payee Only</option>
+                    <option value="ac-payee-not-neg">A/C Payee Only · Not Negotiable</option>
+                    <option value="not-neg">Not Negotiable</option>
+                    <option value="and-co">&amp; Co.</option>
+                    <option value="payees-ac">Payee's A/C Only</option>
+                    <option value="custom">✏️ Custom text…</option>
+                  </select>
+                </div>
+                <div class="fg" id="crossing-custom-field" style="display:none">
+                  <label class="fl" for="crossing-custom">Custom Crossing Text</label>
+                  <textarea class="fta" id="crossing-custom" rows="2" placeholder="Custom text (line breaks supported)" oninput="updateFields()"></textarea>
+                </div>
+                <div class="fg2">
+                  <div class="fg" style="margin-bottom:0">
+                    <label class="fl" for="crossing-style">Style</label>
+                    <select class="fs" id="crossing-style" onchange="updateFields()">
+                      <option value="stamp">Boxed Stamp</option>
+                      <option value="stamp-rotated">Rotated Stamp</option>
+                      <option value="parallel-lines">Parallel Lines</option>
+                      <option value="plain">Plain Text</option>
+                    </select>
+                  </div>
+                  <div class="fg" style="margin-bottom:0">
+                    <label class="fl" for="crossing-position">Position</label>
+                    <select class="fs" id="crossing-position" onchange="onCrossingPositionChange()">
+                      <option value="top-left">Top-Left</option>
+                      <option value="across-top">Across Top</option>
+                      <option value="across-payee">Across Payee</option>
+                      <option value="bottom-left">Bottom-Left</option>
+                      <option value="custom-drag">Custom (drag)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="section-h">Output Options</div>
+            <div class="cb-tight">
+              <label class="tgl" style="margin-bottom:8px">
+                <input type="checkbox" id="show-dhivehi" checked onchange="updateFields()">
+                <span class="tgl-label"><span class="tgl-switch"></span>Print Dhivehi line (MVR only)</span>
+              </label>
+              <label class="tgl" style="margin-bottom:0">
+                <input type="checkbox" id="show-currency-prefix" onchange="updateFields()">
+                <span class="tgl-label"><span class="tgl-switch"></span>Print currency code with amount</span>
+              </label>
+              <div class="help-text">Pre-printed cheques already show the currency — keep this OFF for real cheques.</div>
+            </div>
+          </div>
+
+          <!-- Cheque Background Card -->
+          <div class="card">
+            <div class="ch">
+              <div><div class="ct">Cheque Background</div><div class="cs">Upload scan for accurate alignment</div></div>
+            </div>
+            <div class="cb">
+              <div class="bg-preview-mini" id="bg-preview"><div class="bg-empty">No image uploaded for this bank</div></div>
+              <div class="brow" style="margin-bottom:10px">
+                <button class="btn btn-sm btn-p" onclick="document.getElementById('bg-upload').click()">📷 Upload Scan</button>
+                <input type="file" id="bg-upload" accept="image/*" style="display:none" onchange="handleBgUpload(event)">
+                <button class="btn btn-sm btn-danger-ghost" onclick="removeBackground()" id="bg-remove-btn" style="display:none">✕ Remove</button>
+              </div>
+              <label class="tgl" style="margin-bottom:6px">
+                <input type="checkbox" id="bg-show" checked onchange="updateFields()">
+                <span class="tgl-label"><span class="tgl-switch"></span>Show background in preview</span>
+              </label>
+              <label class="tgl" style="margin-bottom:8px">
+                <input type="checkbox" id="bg-print" onchange="updateFields()">
+                <span class="tgl-label"><span class="tgl-switch"></span>Include background when printing</span>
+              </label>
+              <div class="fg" style="margin-bottom:0">
+                <label class="fl" for="bg-opacity">Preview Opacity <span class="val" id="bg-opacity-value">60%</span></label>
+                <input type="range" id="bg-opacity" min="20" max="100" value="60" step="5" oninput="onBgOpacityChange()">
+              </div>
+            </div>
+          </div>
+
+          <!-- Layout Editor Card -->
+          <div class="card">
+            <div class="ch">
+              <div><div class="ct">Layout Editor</div><div class="cs">Drag &amp; resize field boxes</div></div>
+            </div>
+            <div class="cb">
+              <label class="tgl" style="margin-bottom:8px">
+                <input type="checkbox" id="edit-mode-toggle" onchange="toggleEditMode()">
+                <span class="tgl-label"><span class="tgl-switch"></span>Edit Mode (drag &amp; resize fields)</span>
+              </label>
+              <label class="tgl" style="margin-bottom:8px">
+                <input type="checkbox" id="auto-fit" checked onchange="updateFields()">
+                <span class="tgl-label"><span class="tgl-switch"></span>Auto-fit text to box width</span>
+              </label>
+              <label class="tgl" style="margin-bottom:8px">
+                <input type="checkbox" id="show-template" onchange="updateFields()">
+                <span class="tgl-label"><span class="tgl-switch"></span>Show bank header (plain paper)</span>
+              </label>
+              <div class="help-text" style="margin-bottom:10px">In Edit Mode: drag fields to move, drag the corner handle to resize the box. Text shrinks to fit.</div>
+              <div class="brow">
+                <button class="btn btn-sm btn-ghost" onclick="resetPositions()">↺ Reset Layout</button>
+                <button class="btn btn-sm" onclick="savePositions()">💾 Save Layout</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Font Sizes Card -->
+          <div class="card">
+            <div class="ch">
+              <div><div class="ct">Font Sizes</div></div>
+              <button class="btn btn-xs" onclick="toggleFontPanel()" id="font-toggle-btn">▼ Show</button>
+            </div>
+            <div class="cb" id="font-sizes-panel" style="display:none">
+              <div class="fg">
+                <label class="fl">Scale All Fields <span class="val" id="scale-value">100%</span></label>
+                <input type="range" id="font-scale" min="50" max="200" value="100" step="5" oninput="onFontScaleChange()">
+              </div>
+              <div id="font-size-controls"></div>
+              <div class="brow" style="margin-top:10px">
+                <button class="btn btn-sm btn-ghost" onclick="resetFontSizes()">↺ Reset</button>
+                <button class="btn btn-sm" onclick="saveFontSizes()">💾 Save</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ── RIGHT: PREVIEW STAGE ── -->
+        <div>
+          <div class="preview-controls">
+            <span class="bdg b-sub"><span class="bd"></span><span id="mode-label">Preview</span></span>
+            <span style="flex:1"></span>
+            <button class="btn btn-xs" onclick="setZoom(-0.1)">−</button>
+            <span class="zoom-val" id="zoom-display">100%</span>
+            <button class="btn btn-xs" onclick="setZoom(0.1)">＋</button>
+            <button class="btn btn-xs" onclick="setZoom('fit')">Fit</button>
+          </div>
+
+          <div class="cheque-stage">
+            <div class="cheque-wrapper" id="cheque-wrapper">
+              <div class="cheque" id="cheque">
+
+                <div class="cheque-bg" id="cheque-bg" style="display:none"></div>
+
+                <div class="cheque-header" id="cheque-header" style="display:none">
+                  <div>
+                    <div class="bank-name" id="bank-header-name">Bank of Maldives</div>
+                    <div class="bank-tagline" id="bank-tagline">Your Bank · Your Country</div>
+                  </div>
+                  <div class="cheque-meta">
+                    <div style="font-weight:600" id="bank-branch-display">Malé Main Branch</div>
+                    <div id="bank-address-display">Boduthakurufaanu Magu, Malé 20094</div>
+                    <div id="cheque-no-display" style="margin-top:3mm;font-family:'Courier New';font-weight:700;color:var(--blue3)">No. 000000</div>
+                  </div>
+                </div>
+
+                <div class="cheque-lines" id="cheque-lines" style="display:none">
+                  <div class="line" style="top:8mm"></div>
+                  <div class="line" style="top:18mm"></div>
+                  <div class="line" style="top:28mm"></div>
+                </div>
+
+                <div class="field-box field-date" data-field="date" style="top:6mm;left:130mm;width:40mm">
+                  <span class="label-tag">Date</span>
+                  <span class="field-content" id="f-date"></span>
+                  <span class="resize-handle"></span>
+                </div>
+
+                <div class="field-box field-payee" data-field="payee" style="top:22mm;left:22mm;width:110mm">
+                  <span class="label-tag">Payee</span>
+                  <span class="field-content" id="f-payee">—</span>
+                  <span class="resize-handle"></span>
+                </div>
+
+                <div class="field-box field-words field-multiline" data-field="words1" style="top:33mm;left:30mm;width:100mm">
+                  <span class="label-tag">Amount in Words</span>
+                  <span class="field-content" id="f-words1">—</span>
+                  <span class="resize-handle"></span>
+                </div>
+
+                <div class="field-box field-words field-multiline" data-field="words2" style="top:42mm;left:8mm;width:130mm">
+                  <span class="label-tag">Words (line 2)</span>
+                  <span class="field-content" id="f-words2"></span>
+                  <span class="resize-handle"></span>
+                </div>
+
+                <div class="field-box field-words-dv field-multiline" data-field="wordsdv" style="top:51mm;left:30mm;width:130mm">
+                  <span class="label-tag">Words (Dhivehi)</span>
+                  <span class="field-content" id="f-wordsdv"></span>
+                  <span class="resize-handle"></span>
+                </div>
+
+                <div class="field-box field-amount" data-field="amount" style="top:33mm;left:138mm;width:35mm">
+                  <span class="label-tag">Amount</span>
+                  <span class="currency-tag" id="f-currency-tag" style="display:none">MVR</span>
+                  <span class="field-content" id="f-amount">0.00</span>
+                  <span class="resize-handle"></span>
+                </div>
+
+                <div class="field-box field-account-payee" data-field="acpayee" style="top:14mm;left:2mm;width:30mm">
+                  <span class="label-tag">Crossing</span>
+                  <span class="ac-stamp" id="f-acpayee">A/C PAYEE<br>ONLY</span>
+                  <span class="resize-handle"></span>
+                </div>
+
+                <div class="field-box field-signature" data-field="memo" style="top:62mm;left:8mm;width:80mm">
+                  <span class="label-tag">Memo / For</span>
+                  <span class="field-content" id="f-memo"></span>
+                  <span class="resize-handle"></span>
+                </div>
+
+                <div class="micr-strip" id="micr-strip" style="display:none">
+                  <span id="micr-cheque-no">000000</span>
+                  <span id="micr-bank-code">01234567</span>
+                  <span>14</span>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="help-text" style="text-align:center;max-width:600px">
+              💡 Standard cheque size: <b>178mm × 84mm</b>. Upload a scan and use Edit Mode to align fields exactly.
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="field" id="undated-text-field" style="display:none; margin-top: 10px;">
-        <label class="field-label" for="undated-text">Date Line Text (when undated)</label>
-        <select id="undated-text" onchange="onUndatedTextChange()" style="margin-bottom: 6px;">
-          <option value="">— Leave completely blank —</option>
-          <option value="__ / __ / ____">__ / __ / ____</option>
-          <option value="DATE: __________">DATE: __________</option>
-          <option value="custom">Custom text…</option>
-        </select>
-        <input type="text" id="undated-custom" placeholder="Custom date line text" oninput="updateFields()" style="display:none;">
+    </div>
+
+    <!-- ═══════════════════ PAYEES VIEW ═══════════════════ -->
+    <div id="payees-view" style="display:none">
+      <div class="ph">
+        <div>
+          <div class="pt">Payee Register</div>
+          <div class="ps">Manage saved payees · auto-fills bank &amp; currency when used.</div>
+        </div>
+        <div class="brow">
+          <button class="btn btn-sm" onclick="exportPayeesCSV()">⬇ Export CSV</button>
+          <button class="btn btn-sm" onclick="document.getElementById('payees-import').click()">⬆ Import CSV</button>
+          <input type="file" id="payees-import" accept=".csv" style="display:none" onchange="importPayeesCSV(event)">
+          <button class="btn btn-p btn-sm" onclick="openPayeeForm()">＋ Add Payee</button>
+        </div>
       </div>
-      <div class="field">
-        <label class="field-label" for="bank">Bank</label>
-        <select id="bank" onchange="onBankChange()">
-          <option value="BML">Bank of Maldives (BML)</option>
-          <option value="MIB">Maldives Islamic Bank (MIB)</option>
-          <option value="CBM">Commercial Bank of Maldives (CBM)</option>
-          <option value="BOC">Bank of Ceylon (BOC) — Malé</option>
-          <option value="MCB">Mauritius Commercial Bank (MCB) — Maldives</option>
-          <option value="SBI">State Bank of India (SBI) — Malé</option>
-          <option value="HDFC">HDFC Bank — Maldives</option>
-          <option value="HBL">Habib Bank Limited (HBL) — Malé</option>
-          <option value="HSBC">HSBC — Maldives</option>
-          <option value="CUSTOM">Custom / Other</option>
-        </select>
+
+      <div class="sgrid" id="payees-stats"></div>
+
+      <div class="card">
+        <div class="ch">
+          <div><div class="ct">All Payees</div></div>
+          <div class="brow">
+            <input type="text" class="fi" id="payee-search" placeholder="🔍 Search…" oninput="renderPayees()" style="max-width:240px">
+            <select class="fs" id="payee-filter-bank" onchange="renderPayees()" style="max-width:140px">
+              <option value="">All Banks</option>
+              <option value="BML">BML</option><option value="MIB">MIB</option><option value="CBM">CBM</option>
+              <option value="BOC">BOC</option><option value="MCB">MCB</option><option value="SBI">SBI</option>
+              <option value="HDFC">HDFC</option><option value="HBL">HBL</option><option value="HSBC">HSBC</option>
+              <option value="CUSTOM">Custom</option>
+            </select>
+          </div>
+        </div>
+        <div class="cb">
+          <div class="payees-grid" id="payees-grid">
+            <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--t3);font-style:italic">No payees yet.</div>
+          </div>
+        </div>
       </div>
-      <div class="row-2">
-        <div class="field">
-          <label class="field-label" for="currency">Currency</label>
-          <select id="currency" onchange="updateFields()">
+    </div>
+
+    <!-- ═══════════════════ REGISTER VIEW ═══════════════════ -->
+    <div id="register-view" style="display:none">
+      <div class="ph">
+        <div>
+          <div class="pt">Cheque Register</div>
+          <div class="ps">Complete history of all saved cheques.</div>
+        </div>
+        <div class="brow">
+          <button class="btn btn-sm" onclick="exportCSV()">⬇ Export CSV</button>
+          <button class="btn btn-sm btn-danger-ghost" onclick="clearHistory()">🗑 Clear All</button>
+        </div>
+      </div>
+
+      <div class="sgrid" id="register-stats"></div>
+
+      <div class="card">
+        <div class="ch">
+          <div><div class="ct">All Cheques</div></div>
+          <div class="brow">
+            <input type="text" class="fi" id="register-search" placeholder="🔍 Search payee, cheque no., memo…" oninput="renderRegister()" style="max-width:280px">
+            <select class="fs" id="filter-bank" onchange="renderRegister()" style="max-width:130px">
+              <option value="">All Banks</option>
+              <option value="BML">BML</option><option value="MIB">MIB</option><option value="CBM">CBM</option>
+              <option value="BOC">BOC</option><option value="MCB">MCB</option><option value="SBI">SBI</option>
+              <option value="HDFC">HDFC</option><option value="HBL">HBL</option><option value="HSBC">HSBC</option>
+              <option value="CUSTOM">Custom</option>
+            </select>
+            <select class="fs" id="filter-currency" onchange="renderRegister()" style="max-width:120px">
+              <option value="">All Currencies</option>
+              <option value="MVR">MVR</option><option value="USD">USD</option><option value="INR">INR</option>
+              <option value="EUR">EUR</option><option value="GBP">GBP</option>
+            </select>
+          </div>
+        </div>
+        <div class="tw">
+          <table class="t">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Cheque #</th>
+                <th>Bank</th>
+                <th>Payee</th>
+                <th>Memo</th>
+                <th>Currency</th>
+                <th style="text-align:right">Amount</th>
+                <th style="text-align:right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="register-body">
+              <tr><td colspan="8" style="text-align:center;color:var(--t3);font-style:italic;padding:30px">No saved cheques yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ═══════════════════ HELP MODAL ═══════════════════ -->
+<div class="modal-bd" id="help-modal">
+  <div class="modal">
+    <div class="mh">
+      <h3>How to use Cheque Printer</h3>
+      <button class="mh-close" onclick="closeHelp()">✕</button>
+    </div>
+    <div class="mb">
+      <div class="al al-i"><b>First-time setup per bank</b><br>
+        1. Pick the bank and currency.<br>
+        2. Upload a scan of your blank cheque (Cheque Background section).<br>
+        3. Turn on Edit Mode. Drag fields to align with your scan, drag the corner handle to resize.<br>
+        4. Save Layout. The bank remembers its layout, background, and font sizes.<br>
+        5. Use Print Preview to verify before printing.
+      </div>
+      <div class="al al-s"><b>Printing</b><br>
+        1. Load a blank cheque or plain paper.<br>
+        2. Background is preview-only by default — toggle on for plain paper.<br>
+        3. In the print dialog: paper size <b>178×84mm</b>, margins <b>None</b>, headers/footers <b>off</b>.
+      </div>
+      <div class="al al-w"><b>Bilingual amounts</b><br>
+        For MVR, the Dhivehi amount is generated automatically (Sofwath/NumberToThaana vocabulary). Toggle <i>Print Dhivehi line</i> to include in output.
+      </div>
+      <div class="al"><b>Undated cheques</b><br>
+        Toggle <i>Leave undated</i> to skip the date. Choose to leave blank, print a placeholder, or write custom text.
+      </div>
+      <div class="al"><b>Payees</b><br>
+        Save frequent payees once. Type in the Payee field to see suggestions, or use the <b>⊕</b> button. CSV import/export available.
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-p btn-sm" onclick="closeHelp()">Got it</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ PAYEE FORM MODAL ═══════════════════ -->
+<div class="modal-bd" id="payee-form-modal">
+  <div class="modal">
+    <div class="mh">
+      <h3 id="payee-form-title">Add Payee</h3>
+      <button class="mh-close" onclick="closePayeeForm()">✕</button>
+    </div>
+    <div class="mb">
+      <input type="hidden" id="payee-form-id">
+      <div class="fg">
+        <label class="fl" for="payee-form-name">Payee Name<span class="req">*</span></label>
+        <input type="text" class="fi" id="payee-form-name" placeholder="John Doe / ABC Pvt Ltd">
+      </div>
+      <div class="fg2">
+        <div class="fg">
+          <label class="fl" for="payee-form-account">Account Number</label>
+          <input type="text" class="fi" id="payee-form-account" placeholder="7730000123456">
+        </div>
+        <div class="fg">
+          <label class="fl" for="payee-form-bank">Default Bank</label>
+          <select class="fs" id="payee-form-bank">
+            <option value="">— None —</option>
+            <option value="BML">Bank of Maldives</option>
+            <option value="MIB">Maldives Islamic Bank</option>
+            <option value="CBM">Commercial Bank of Maldives</option>
+            <option value="BOC">Bank of Ceylon</option>
+            <option value="MCB">Mauritius Commercial Bank</option>
+            <option value="SBI">State Bank of India</option>
+            <option value="HDFC">HDFC Bank</option>
+            <option value="HBL">Habib Bank Limited</option>
+            <option value="HSBC">HSBC</option>
+            <option value="CUSTOM">Custom / Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg2">
+        <div class="fg">
+          <label class="fl" for="payee-form-currency">Default Currency</label>
+          <select class="fs" id="payee-form-currency">
+            <option value="">— None —</option>
             <option value="MVR">MVR — Rufiyaa</option>
             <option value="USD">USD — Dollar</option>
             <option value="INR">INR — Rupee</option>
@@ -632,486 +1043,19 @@
             <option value="GBP">GBP — Pound</option>
           </select>
         </div>
-        <div class="field">
-          <label class="field-label" for="branch">Branch</label>
-          <input type="text" id="branch" placeholder="Malé Main" oninput="updateFields()">
+        <div class="fg">
+          <label class="fl" for="payee-form-category">Category</label>
+          <input type="text" class="fi" id="payee-form-category" placeholder="Supplier, Staff, Utility">
         </div>
+      </div>
+      <div class="fg" style="margin-bottom:0">
+        <label class="fl" for="payee-form-notes">Notes</label>
+        <textarea class="fta" id="payee-form-notes" rows="2" placeholder="Phone, email, contract reference…"></textarea>
       </div>
     </div>
-
-    <!-- Payee & Amount -->
-    <div class="section">
-      <h2 class="section-title">Pay To</h2>
-      <div class="field">
-        <label class="field-label" for="payee">Payee Name</label>
-        <div class="payee-combo">
-          <input type="text" id="payee" placeholder="Type or pick a saved payee" oninput="onPayeeInput()" onfocus="showPayeeSuggestions()" onblur="hidePayeeSuggestions()" autocomplete="off">
-          <button type="button" class="payee-save-btn" onclick="quickSavePayee()" title="Save this payee to the register">⊕</button>
-          <div class="payee-suggestions" id="payee-suggestions"></div>
-        </div>
-        <p class="helper-text" id="payee-status"></p>
-      </div>
-      <div class="field">
-        <label class="field-label" for="amount">Amount (figures)</label>
-        <input type="number" id="amount" step="0.01" min="0" placeholder="0.00" oninput="updateFields()">
-      </div>
-      <div class="field">
-        <label class="field-label">Amount in Words</label>
-        <div class="words-display" id="words-display">—
-          <div class="words-dhivehi" id="words-dhivehi" style="display:none;"></div>
-        </div>
-        <p class="helper-text" id="dhivehi-hint" style="display:none;">📝 Dhivehi (Thaana) shown when MVR is selected. Use as a reference or print both lines.</p>
-      </div>
-      <div class="field">
-        <label class="field-label" for="memo">Memo / For (optional)</label>
-        <input type="text" id="memo" placeholder="Invoice #1234" oninput="updateFields()">
-      </div>
-      <div class="toggle-switch">
-        <input type="checkbox" id="crossing-on" checked onchange="onCrossingToggle()">
-        <label for="crossing-on">
-          <span class="switch"></span>
-          <span>Print crossing / restrictive endorsement</span>
-        </label>
-      </div>
-      <div id="crossing-options" style="margin-top: 10px;">
-        <div class="field">
-          <label class="field-label" for="crossing-preset">Crossing Preset</label>
-          <select id="crossing-preset" onchange="onCrossingPresetChange()">
-            <option value="ac-payee">A/C Payee Only</option>
-            <option value="ac-payee-not-neg">A/C Payee Only · Not Negotiable</option>
-            <option value="not-neg">Not Negotiable</option>
-            <option value="and-co">& Co.</option>
-            <option value="payees-ac">Payee's A/C Only</option>
-            <option value="custom">✏️ Custom text…</option>
-          </select>
-        </div>
-        <div class="field" id="crossing-custom-field" style="display:none;">
-          <label class="field-label" for="crossing-custom">Custom Crossing Text</label>
-          <textarea id="crossing-custom" rows="2" placeholder="Enter custom crossing text (line breaks supported)" oninput="updateFields()"></textarea>
-          <p class="helper-text">Tip: Use a line break for two-line stamps. Keep short — long text won't fit on the cheque.</p>
-        </div>
-        <div class="row-2">
-          <div class="field">
-            <label class="field-label" for="crossing-style">Style</label>
-            <select id="crossing-style" onchange="updateFields()">
-              <option value="stamp">Boxed Stamp</option>
-              <option value="stamp-rotated">Rotated Stamp (-12°)</option>
-              <option value="parallel-lines">Parallel Lines (// text //)</option>
-              <option value="plain">Plain Text</option>
-            </select>
-          </div>
-          <div class="field">
-            <label class="field-label" for="crossing-position">Position</label>
-            <select id="crossing-position" onchange="onCrossingPositionChange()">
-              <option value="top-left">Top-Left Corner</option>
-              <option value="across-top">Across Top</option>
-              <option value="across-payee">Across Payee Line</option>
-              <option value="bottom-left">Bottom-Left</option>
-              <option value="custom-drag">Custom (drag in Edit Mode)</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      <div class="toggle-switch" style="margin-top: 12px;">
-        <input type="checkbox" id="show-dhivehi" checked onchange="updateFields()">
-        <label for="show-dhivehi">
-          <span class="switch"></span>
-          <span>Print Dhivehi line on cheque (MVR only)</span>
-        </label>
-      </div>
-      <div class="toggle-switch" style="margin-top: 8px;">
-        <input type="checkbox" id="show-currency-prefix" onchange="updateFields()">
-        <label for="show-currency-prefix">
-          <span class="switch"></span>
-          <span>Print currency code before amount (e.g. "MVR 1,000")</span>
-        </label>
-      </div>
-      <p class="helper-text">Most pre-printed cheques already show the currency — keep this OFF when printing on real cheques. Turn ON if printing on plain paper or for templates without currency.</p>
-    </div>
-
-    <!-- Layout -->
-    <div class="section">
-      <h2 class="section-title">Cheque Background</h2>
-      <div id="bg-status" class="bg-status">
-        <div class="bg-preview" id="bg-preview">
-          <div class="bg-empty">No image uploaded for this bank</div>
-        </div>
-        <div class="bg-actions">
-          <button class="btn btn-sm" onclick="document.getElementById('bg-upload').click()">📷 Upload Scan</button>
-          <input type="file" id="bg-upload" accept="image/*" style="display:none" onchange="handleBgUpload(event)">
-          <button class="btn btn-sm btn-ghost btn-danger" onclick="removeBackground()" id="bg-remove-btn" style="display:none;">✕ Remove</button>
-        </div>
-      </div>
-      <p class="helper-text">Upload a scan/photo of your blank cheque from this bank. Use it to align fields exactly. Saved per bank. The background is preview-only by default — toggle below to include it when printing.</p>
-      <div class="toggle-switch" style="margin-top: 10px;">
-        <input type="checkbox" id="bg-print" onchange="updateFields()">
-        <label for="bg-print">
-          <span class="switch"></span>
-          <span>Include background when printing (plain paper)</span>
-        </label>
-      </div>
-      <div class="toggle-switch" style="margin-top: 8px;">
-        <input type="checkbox" id="bg-show" checked onchange="updateFields()">
-        <label for="bg-show">
-          <span class="switch"></span>
-          <span>Show background in preview</span>
-        </label>
-      </div>
-      <div class="field" style="margin-top: 10px;">
-        <label class="field-label" for="bg-opacity">Preview opacity <span class="font-value" id="bg-opacity-value">60%</span></label>
-        <input type="range" id="bg-opacity" min="20" max="100" value="60" step="5" oninput="onBgOpacityChange()">
-      </div>
-    </div>
-
-    <!-- Layout -->
-    <div class="section">
-      <h2 class="section-title">Layout Editor</h2>
-      <div class="toggle-switch" style="margin-bottom: 10px;">
-        <input type="checkbox" id="edit-mode-toggle" onchange="toggleEditMode()">
-        <label for="edit-mode-toggle">
-          <span class="switch"></span>
-          <span>Edit Mode (drag &amp; resize fields)</span>
-        </label>
-      </div>
-      <div class="toggle-switch" style="margin-bottom: 10px;">
-        <input type="checkbox" id="show-template" onchange="updateFields()">
-        <label for="show-template">
-          <span class="switch"></span>
-          <span>Show Bank Header (for plain paper)</span>
-        </label>
-      </div>
-      <div class="toggle-switch" style="margin-bottom: 10px;">
-        <input type="checkbox" id="auto-fit" checked onchange="updateFields()">
-        <label for="auto-fit">
-          <span class="switch"></span>
-          <span>Auto-fit text to field box (shrink if needed)</span>
-        </label>
-      </div>
-      <p class="helper-text">In Edit Mode: <strong>drag</strong> a field to move, <strong>drag the corner handle</strong> to resize the box width. Text auto-shrinks if it overflows. All saved per bank.</p>
-      <div class="btn-group" style="margin-top: 10px;">
-        <button class="btn btn-sm btn-ghost" onclick="resetPositions()">↺ Reset Layout</button>
-        <button class="btn btn-sm btn-ghost" onclick="savePositions()">💾 Save Layout</button>
-      </div>
-    </div>
-
-    <!-- Font Sizes -->
-    <div class="section">
-      <h2 class="section-title">
-        <span style="flex:1">Font Sizes</span>
-        <button class="btn btn-sm btn-ghost" onclick="toggleFontPanel()" id="font-toggle-btn" style="padding: 2px 8px; font-size: 11px;">▼ Show</button>
-      </h2>
-      <div id="font-sizes-panel" style="display: none;">
-        <div class="field">
-          <label class="field-label">Scale All Fields <span class="font-value" id="scale-value">100%</span></label>
-          <input type="range" id="font-scale" min="50" max="200" value="100" step="5" oninput="onFontScaleChange()">
-          <p class="helper-text">Quick multiplier — scales every field's font size at once.</p>
-        </div>
-        <div id="font-size-controls"></div>
-        <div class="btn-group" style="margin-top: 12px;">
-          <button class="btn btn-sm btn-ghost" onclick="resetFontSizes()">↺ Reset</button>
-          <button class="btn btn-sm btn-ghost" onclick="saveFontSizes()">💾 Save Sizes</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Save -->
-    <div class="section">
-      <h2 class="section-title">Save to Register</h2>
-      <div class="btn-group">
-        <button class="btn btn-primary" onclick="saveCheque()">＋ Save & New</button>
-        <button class="btn" onclick="newCheque()">🆕 New Blank</button>
-      </div>
-      <p class="helper-text">Saves this cheque to the Register and auto-increments the cheque number.</p>
-    </div>
-
-  </aside>
-
-  <!-- PREVIEW -->
-  <main class="preview-area">
-    <div class="preview-controls">
-      <span class="mode-pill"><span class="dot"></span><span id="mode-label">Preview</span></span>
-      <span style="flex:1"></span>
-      <button class="btn btn-sm" onclick="togglePrintPreview()" id="print-preview-btn">👁 Print Preview</button>
-      <span style="width: 8px;"></span>
-      <button class="btn btn-sm" onclick="setZoom(-0.1)">−</button>
-      <span class="zoom-display" id="zoom-display">100%</span>
-      <button class="btn btn-sm" onclick="setZoom(0.1)">＋</button>
-      <button class="btn btn-sm" onclick="setZoom('fit')">Fit</button>
-    </div>
-
-    <div class="cheque-wrapper" id="cheque-wrapper">
-      <div class="cheque" id="cheque">
-
-        <!-- Background image (uploaded scan of real cheque) -->
-        <div class="cheque-bg" id="cheque-bg" style="display:none;"></div>
-
-        <div class="cheque-header" id="cheque-header" style="display:none;">
-          <div>
-            <div class="bank-name" id="bank-header-name">Bank of Maldives</div>
-            <div class="bank-tagline" id="bank-tagline">Your Bank · Your Country</div>
-          </div>
-          <div class="cheque-meta">
-            <div style="font-weight: 600;" id="bank-branch-display">Malé Main Branch</div>
-            <div id="bank-address-display">Boduthakurufaanu Magu, Malé 20094</div>
-            <div id="cheque-no-display" style="margin-top:3mm; font-family: 'JetBrains Mono'; font-weight:700; color:#1a2742;">No. 000000</div>
-          </div>
-        </div>
-
-        <div class="cheque-lines" id="cheque-lines" style="display:none;">
-          <div class="line" style="top: 8mm;"></div>
-          <div class="line" style="top: 18mm;"></div>
-          <div class="line" style="top: 28mm;"></div>
-        </div>
-
-        <!-- Draggable & resizable fields -->
-        <div class="field-box field-date" data-field="date" style="top: 6mm; left: 130mm; width: 40mm;">
-          <span class="label-tag">Date</span>
-          <span class="field-content" id="f-date"></span>
-          <span class="resize-handle"></span>
-        </div>
-
-        <div class="field-box field-payee" data-field="payee" style="top: 22mm; left: 22mm; width: 110mm;">
-          <span class="label-tag">Payee</span>
-          <span class="field-content" id="f-payee">—</span>
-          <span class="resize-handle"></span>
-        </div>
-
-        <div class="field-box field-words field-multiline" data-field="words1" style="top: 33mm; left: 30mm; width: 100mm;">
-          <span class="label-tag">Amount in Words</span>
-          <span class="field-content" id="f-words1">—</span>
-          <span class="resize-handle"></span>
-        </div>
-
-        <div class="field-box field-words field-multiline" data-field="words2" style="top: 42mm; left: 8mm; width: 130mm;">
-          <span class="label-tag">Words (line 2)</span>
-          <span class="field-content" id="f-words2"></span>
-          <span class="resize-handle"></span>
-        </div>
-
-        <div class="field-box field-words-dv field-multiline" data-field="wordsdv" style="top: 51mm; left: 30mm; width: 130mm;">
-          <span class="label-tag">Words (Dhivehi)</span>
-          <span class="field-content" id="f-wordsdv"></span>
-          <span class="resize-handle"></span>
-        </div>
-
-        <div class="field-box field-amount" data-field="amount" style="top: 33mm; left: 138mm; width: 35mm;">
-          <span class="label-tag">Amount (figures)</span>
-          <span class="currency-tag" id="f-currency-tag" style="display:none;">MVR</span>
-          <span class="field-content" id="f-amount">0.00</span>
-          <span class="resize-handle"></span>
-        </div>
-
-        <div class="field-box field-account-payee" data-field="acpayee" style="top: 14mm; left: 2mm; width: 30mm;">
-          <span class="label-tag">Crossing</span>
-          <span class="ac-stamp" id="f-acpayee">A/C PAYEE<br>ONLY</span>
-          <span class="resize-handle"></span>
-        </div>
-
-        <div class="field-box field-signature" data-field="memo" style="top: 62mm; left: 8mm; width: 80mm;">
-          <span class="label-tag">Memo / For</span>
-          <span class="field-content" id="f-memo"></span>
-          <span class="resize-handle"></span>
-        </div>
-
-        <div class="micr-strip" id="micr-strip" style="display:none;">
-          <span id="micr-cheque-no">000000</span>
-          <span id="micr-bank-code">01234567</span>
-          <span>14</span>
-        </div>
-
-      </div>
-    </div>
-
-    <p class="helper-text" style="max-width: 800px; text-align: center;">
-      💡 Standard cheque size: <strong>178mm × 84mm</strong>. Upload a scan of your blank cheque for accurate alignment. In Edit Mode, drag fields to move and use the corner handle to resize. Text auto-shrinks to fit.
-    </p>
-
-  </main>
-</div>
-
-<!-- PAYEES TAB -->
-<div id="payees-view" style="display: none; padding: 28px;">
-  <div class="payees-container">
-
-    <div class="register-stats" id="payees-stats" style="margin-bottom: 20px;"></div>
-
-    <div class="register-controls">
-      <input type="text" class="register-search" id="payee-search" placeholder="🔍 Search payees by name, account, or notes..." oninput="renderPayees()">
-      <select id="payee-filter-bank" onchange="renderPayees()" style="width: auto;">
-        <option value="">All Banks</option>
-        <option value="BML">BML</option>
-        <option value="MIB">MIB</option>
-        <option value="CBM">CBM</option>
-        <option value="BOC">BOC</option>
-        <option value="MCB">MCB</option>
-        <option value="SBI">SBI</option>
-        <option value="HDFC">HDFC</option>
-        <option value="HBL">HBL</option>
-        <option value="HSBC">HSBC</option>
-        <option value="CUSTOM">Custom</option>
-      </select>
-      <button class="btn btn-primary" onclick="openPayeeForm()">＋ Add Payee</button>
-      <button class="btn" onclick="exportPayeesCSV()">📥 Export CSV</button>
-      <button class="btn btn-ghost" onclick="document.getElementById('payees-import').click()">📤 Import CSV</button>
-      <input type="file" id="payees-import" accept=".csv" style="display:none" onchange="importPayeesCSV(event)">
-    </div>
-
-    <div class="payees-grid" id="payees-grid">
-      <div class="register-empty" style="grid-column: 1 / -1;">No payees saved yet. Click "Add Payee" or save one directly while printing a cheque.</div>
-    </div>
-
-  </div>
-</div>
-
-<!-- PAYEE FORM MODAL -->
-<div class="modal-backdrop" id="payee-form-modal">
-  <div class="modal modal-form">
-    <h3 id="payee-form-title">Add Payee</h3>
-    <input type="hidden" id="payee-form-id">
-    <div class="field">
-      <label class="field-label" for="payee-form-name">Payee Name *</label>
-      <input type="text" id="payee-form-name" placeholder="John Doe / ABC Pvt Ltd">
-    </div>
-    <div class="row-2">
-      <div class="field">
-        <label class="field-label" for="payee-form-account">Account Number (optional)</label>
-        <input type="text" id="payee-form-account" placeholder="7730000123456">
-      </div>
-      <div class="field">
-        <label class="field-label" for="payee-form-bank">Default Bank (optional)</label>
-        <select id="payee-form-bank">
-          <option value="">— None —</option>
-          <option value="BML">Bank of Maldives (BML)</option>
-          <option value="MIB">Maldives Islamic Bank (MIB)</option>
-          <option value="CBM">Commercial Bank of Maldives (CBM)</option>
-          <option value="BOC">Bank of Ceylon (BOC)</option>
-          <option value="MCB">Mauritius Commercial Bank (MCB)</option>
-          <option value="SBI">State Bank of India (SBI)</option>
-          <option value="HDFC">HDFC Bank</option>
-          <option value="HBL">Habib Bank Limited (HBL)</option>
-          <option value="HSBC">HSBC</option>
-          <option value="CUSTOM">Custom / Other</option>
-        </select>
-      </div>
-    </div>
-    <div class="row-2">
-      <div class="field">
-        <label class="field-label" for="payee-form-currency">Default Currency (optional)</label>
-        <select id="payee-form-currency">
-          <option value="">— None —</option>
-          <option value="MVR">MVR — Rufiyaa</option>
-          <option value="USD">USD — Dollar</option>
-          <option value="INR">INR — Rupee</option>
-          <option value="EUR">EUR — Euro</option>
-          <option value="GBP">GBP — Pound</option>
-        </select>
-      </div>
-      <div class="field">
-        <label class="field-label" for="payee-form-category">Category (optional)</label>
-        <input type="text" id="payee-form-category" placeholder="e.g. Supplier, Staff, Utility">
-      </div>
-    </div>
-    <div class="field">
-      <label class="field-label" for="payee-form-notes">Notes (optional)</label>
-      <textarea id="payee-form-notes" rows="2" placeholder="Any reference info — phone, email, contract reference…"></textarea>
-    </div>
-    <div class="btn-group" style="margin-top: 18px; justify-content: flex-end;">
-      <button class="btn btn-ghost" onclick="closePayeeForm()">Cancel</button>
-      <button class="btn btn-primary" onclick="savePayeeForm()">💾 Save Payee</button>
-    </div>
-  </div>
-</div>
-
-<!-- REGISTER TAB -->
-<div id="register-view" style="display: none; padding: 28px; max-width: 1200px; margin: 0 auto;">
-  <div class="register-container">
-
-    <div class="register-stats" id="register-stats"></div>
-
-    <div class="register-controls">
-      <input type="text" class="register-search" id="register-search" placeholder="🔍 Search by payee, cheque no., memo..." oninput="renderRegister()">
-      <select id="filter-bank" onchange="renderRegister()" style="width: auto;">
-        <option value="">All Banks</option>
-        <option value="BML">BML</option>
-        <option value="MIB">MIB</option>
-        <option value="CBM">CBM</option>
-        <option value="BOC">BOC</option>
-        <option value="MCB">MCB</option>
-        <option value="SBI">SBI</option>
-        <option value="HDFC">HDFC</option>
-        <option value="HBL">HBL</option>
-        <option value="HSBC">HSBC</option>
-        <option value="CUSTOM">Custom</option>
-      </select>
-      <select id="filter-currency" onchange="renderRegister()" style="width: auto;">
-        <option value="">All Currencies</option>
-        <option value="MVR">MVR</option>
-        <option value="USD">USD</option>
-        <option value="INR">INR</option>
-        <option value="EUR">EUR</option>
-        <option value="GBP">GBP</option>
-      </select>
-      <button class="btn" onclick="exportCSV()">📥 Export CSV</button>
-      <button class="btn btn-danger btn-ghost" onclick="clearHistory()">🗑 Clear All</button>
-    </div>
-
-    <table class="register-table">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Cheque #</th>
-          <th>Bank</th>
-          <th>Payee</th>
-          <th>Memo</th>
-          <th>Currency</th>
-          <th style="text-align: right;">Amount</th>
-          <th style="text-align: right;">Actions</th>
-        </tr>
-      </thead>
-      <tbody id="register-body">
-        <tr><td colspan="8" class="register-empty">No saved cheques yet. Create one in the Printer tab.</td></tr>
-      </tbody>
-    </table>
-
-  </div>
-</div>
-
-<!-- Help Modal -->
-<div class="modal-backdrop" id="help-modal">
-  <div class="modal">
-    <h3>How to use Cheque Printer Pro</h3>
-    <h4 style="margin: 14px 0 6px; font-size: 14px; color: var(--accent);">First-time setup per bank</h4>
-    <ol style="padding-left: 20px; line-height: 1.7; font-size: 13px; color: var(--ink-dim);">
-      <li>Pick the bank and currency.</li>
-      <li><strong>Upload a scan</strong> of your blank cheque in the "Cheque Background" section. This is your alignment reference.</li>
-      <li>Turn on <strong>Edit Mode</strong>. Drag each field on the cheque preview to align with the printed boxes on your scan, and drag the corner handle (▶) to resize each field's width.</li>
-      <li>Text auto-shrinks if it doesn't fit. Use Font Sizes section for manual control.</li>
-      <li>Click <strong>Save Layout</strong> when done. The bank remembers its layout, background image, and font sizes.</li>
-      <li>Click <strong>👁 Print Preview</strong> at any time to see the clean printed output.</li>
-    </ol>
-    <h4 style="margin: 16px 0 6px; font-size: 14px; color: var(--accent);">Printing</h4>
-    <ol style="padding-left: 20px; line-height: 1.7; font-size: 13px; color: var(--ink-dim);">
-      <li>Load a blank cheque into your printer (or plain paper if testing).</li>
-      <li>By default the background image is preview-only (won't print). Toggle <em>Include background when printing</em> if you want it on plain paper.</li>
-      <li>Click <strong>Print</strong>. In the print dialog, set paper to custom <strong>178×84mm</strong>, margins <strong>None</strong>, headers/footers <strong>off</strong>.</li>
-    </ol>
-    <h4 style="margin: 16px 0 6px; font-size: 14px; color: var(--accent);">Office workflow</h4>
-    <ol style="padding-left: 20px; line-height: 1.7; font-size: 13px; color: var(--ink-dim);">
-      <li>Click <strong>Save &amp; New</strong> after each print — auto-increments cheque number.</li>
-      <li>Open the <strong>Register</strong> tab to search, filter by bank/currency, and export to CSV for your accounts.</li>
-      <li>All data is stored locally in your browser. Export regularly as backup.</li>
-    </ol>
-    <h4 style="margin: 16px 0 6px; font-size: 14px; color: var(--accent);">Payee register</h4>
-    <p style="font-size: 13px; color: var(--ink-dim); line-height: 1.6;">Save frequent payees once. While printing, type a name and pick from the suggestions — bank and currency auto-fill from the saved payee's defaults. Click <strong>⊕</strong> next to the payee field to save a new one. Manage all payees in the <strong>Payees</strong> tab — add, edit, delete, import/export CSV. Use the CSV import to bulk-load payees from your existing spreadsheet (required column: <code>Name</code>; optional: <code>Account Number, Default Bank, Default Currency, Category, Notes</code>).</p>
-
-    <h4 style="margin: 16px 0 6px; font-size: 14px; color: var(--accent);">Bilingual amounts</h4>
-    <p style="font-size: 13px; color: var(--ink-dim); line-height: 1.6;">For MVR, the Dhivehi (Thaana) amount is generated automatically using the standard Sofwath/NumberToThaana vocabulary. Toggle <em>Print Dhivehi line on cheque</em> to include it in the printed output.</p>
-    <h4 style="margin: 16px 0 6px; font-size: 14px; color: var(--accent);">Undated cheques</h4>
-    <p style="font-size: 13px; color: var(--ink-dim); line-height: 1.6;">Toggle <em>Leave undated</em> to skip the date. Choose to leave the date line completely blank, print a placeholder like <code>__ / __ / ____</code>, or write your own custom text.</p>
-    <h4 style="margin: 16px 0 6px; font-size: 14px; color: var(--accent);">Crossing / endorsement</h4>
-    <p style="font-size: 13px; color: var(--ink-dim); line-height: 1.6;">Pick from presets (A/C Payee Only, Not Negotiable, &amp; Co., etc.) or write your own. Choose a stamp style (boxed, rotated, parallel lines, plain) and position (corner, across top, across payee line, bottom). Your choice is saved per bank.</p>
-    <div class="btn-group" style="margin-top: 20px; justify-content: flex-end;">
-      <button class="btn btn-primary" onclick="closeHelp()">Got it</button>
+    <div class="mf">
+      <button class="btn btn-sm" onclick="closePayeeForm()">Cancel</button>
+      <button class="btn btn-p btn-sm" onclick="savePayeeForm()">💾 Save Payee</button>
     </div>
   </div>
 </div>
@@ -1119,6 +1063,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
+
 /* ============================================================
    ENGLISH NUMBER-TO-WORDS (International + Indian)
    ============================================================ */
@@ -1375,15 +1320,13 @@ function renderFontControls() {
   const container = document.getElementById('font-size-controls');
   if (!container) return;
   container.innerHTML = Object.keys(DEFAULT_FONT_SIZES).map(field => `
-    <div class="font-row">
+    <div class="fontrow">
       <div>
-        <div class="font-row-label">${FIELD_LABELS[field]}</div>
-        <div class="font-row-slider">
-          <input type="range" min="5" max="24" step="0.5" value="${fontSizes[field]}"
-                 data-field="${field}" oninput="onFontSizeChange(this)">
-        </div>
+        <div class="fontrow-label">${FIELD_LABELS[field]}</div>
+        <input type="range" min="5" max="24" step="0.5" value="${fontSizes[field]}"
+               data-field="${field}" oninput="onFontSizeChange(this)">
       </div>
-      <div class="font-row-value" id="font-val-${field}">${fontSizes[field]}pt</div>
+      <div class="fontrow-val" id="font-val-${field}">${fontSizes[field]}pt</div>
     </div>
   `).join('');
 }
@@ -1999,7 +1942,7 @@ function togglePrintPreview() {
   const modeLabel = document.getElementById('mode-label');
   if (inPrintPreview) {
     btn.textContent = '✎ Exit Preview';
-    btn.classList.add('btn-primary');
+    btn.classList.add('btn-p');
     modeLabel.textContent = 'Print Preview';
     // Auto turn off edit mode in preview
     if (editMode) {
@@ -2008,7 +1951,7 @@ function togglePrintPreview() {
     }
   } else {
     btn.textContent = '👁 Print Preview';
-    btn.classList.remove('btn-primary');
+    btn.classList.remove('btn-p');
     modeLabel.textContent = 'Preview';
   }
   // Re-run auto-fit since visible state changed
@@ -2284,12 +2227,11 @@ function renderPayees() {
 
   const stats = document.getElementById('payees-stats');
   if (stats) {
+    const topPayee = Object.entries(usageCount).sort((a,b) => b[1] - a[1])[0];
     stats.innerHTML = `
-      <div class="stat-card"><div class="stat-label">Total Payees</div><div class="stat-value">${list.length}</div><div class="stat-detail">${filtered.length} shown</div></div>
-      <div class="stat-card"><div class="stat-label">Most Used</div><div class="stat-value" style="font-size:18px">${
-        Object.entries(usageCount).sort((a,b) => b[1] - a[1])[0]?.[0]?.substring(0, 20) || '—'
-      }</div><div class="stat-detail">${Object.entries(usageCount).sort((a,b) => b[1] - a[1])[0]?.[1] || 0} cheques</div></div>
-      <div class="stat-card"><div class="stat-label">In Categories</div><div class="stat-value">${new Set(list.map(p => p.category).filter(Boolean)).size}</div><div class="stat-detail">${list.filter(p => p.category).length} categorised</div></div>
+      <div class="sc bl"><div class="sl">Total Payees</div><div class="sv">${list.length}</div><div class="ss">${filtered.length} shown</div></div>
+      <div class="sc gr"><div class="sl">Most Used</div><div class="sv" style="font-size:14px">${topPayee?.[0]?.substring(0, 22) || '—'}</div><div class="ss">${topPayee?.[1] || 0} cheques issued</div></div>
+      <div class="sc te"><div class="sl">In Categories</div><div class="sv">${new Set(list.map(p => p.category).filter(Boolean)).size}</div><div class="ss">${list.filter(p => p.category).length} categorised</div></div>
     `;
   }
 
@@ -2310,15 +2252,17 @@ function renderPayees() {
     return `
       <div class="payee-card">
         <div class="pc-name">${escapeHTML(p.name)}</div>
-        <div class="pc-meta">${p.account ? 'A/C ' + escapeHTML(p.account) : '<span style="opacity:0.4">no account number</span>'}</div>
-        ${p.bank ? `<span class="pc-bank">${p.bank}${p.currency ? ' · ' + p.currency : ''}</span>` : ''}
-        ${p.category ? `<span class="pc-bank" style="background: rgba(255,184,58,0.15); color: var(--accent-2);">${escapeHTML(p.category)}</span>` : ''}
+        <div class="pc-meta">${p.account ? 'A/C ' + escapeHTML(p.account) : '<span style="color:var(--t3)">no account</span>'}</div>
+        <div class="pc-tags">
+          ${p.bank ? `<span class="bdg b-sub">${p.bank}${p.currency ? ' · ' + p.currency : ''}</span>` : ''}
+          ${p.category ? `<span class="bdg b-pap">${escapeHTML(p.category)}</span>` : ''}
+        </div>
         <div class="pc-notes">${p.notes ? escapeHTML(p.notes) : ''}</div>
         <div class="pc-stats">${usage} cheque${usage === 1 ? '' : 's'} issued${totalsText ? ' · ' + totalsText : ''}</div>
         <div class="pc-actions">
-          <button class="btn btn-sm btn-primary" onclick="usePayeeInPrinter('${p.id}')">↗ Use</button>
-          <button class="btn btn-sm" onclick="openPayeeForm('${p.id}')">✎ Edit</button>
-          <button class="btn btn-sm btn-ghost btn-danger" onclick="deletePayee('${p.id}')">🗑</button>
+          <button class="btn btn-p btn-xs" onclick="usePayeeInPrinter('${p.id}')">↗ Use</button>
+          <button class="btn btn-xs" onclick="openPayeeForm('${p.id}')">✎ Edit</button>
+          <button class="btn btn-xs btn-danger-ghost" onclick="deletePayee('${p.id}')">🗑</button>
         </div>
       </div>
     `;
@@ -2571,10 +2515,11 @@ function renderRegister() {
     totals[c.currency] = (totals[c.currency] || 0) + (c.amount || 0);
   });
   const statCards = [
-    `<div class="stat-card"><div class="stat-label">Total Cheques</div><div class="stat-value">${filtered.length}</div><div class="stat-detail">${list.length} total in register</div></div>`,
-    ...Object.entries(totals).map(([cur, amt]) =>
-      `<div class="stat-card"><div class="stat-label">Total ${cur}</div><div class="stat-value">${formatAmount(amt, cur)}</div><div class="stat-detail">${filtered.filter(c => c.currency === cur).length} cheques</div></div>`
-    )
+    `<div class="sc bl"><div class="sl">Total Cheques</div><div class="sv">${filtered.length}</div><div class="ss">${list.length} total in register</div></div>`,
+    ...Object.entries(totals).map(([cur, amt], i) => {
+      const colors = ['gr','am','te','or'];
+      return `<div class="sc ${colors[i % colors.length]}"><div class="sl">Total ${cur}</div><div class="sv">${formatAmount(amt, cur)}</div><div class="ss">${filtered.filter(c => c.currency === cur).length} cheques</div></div>`;
+    })
   ];
   stats.innerHTML = statCards.join('');
 
@@ -2586,16 +2531,16 @@ function renderRegister() {
   }
   body.innerHTML = filtered.map(c => `
     <tr>
-      <td style="font-family: 'JetBrains Mono', monospace; font-size: 12px;">${c.undated ? '<span style="color: var(--ink-dim); font-style: italic;">undated</span>' : (formatDate(c.date) || '—')}</td>
-      <td style="font-family: 'JetBrains Mono', monospace; font-weight: 600;">${escapeHTML(c.chequeNo || '—')}</td>
-      <td><span class="pill">${c.bank}</span></td>
+      <td class="mono" style="color:var(--t2)">${c.undated ? '<i style="color:var(--t3)">undated</i>' : (formatDate(c.date) || '—')}</td>
+      <td class="mono">${escapeHTML(c.chequeNo || '—')}</td>
+      <td><span class="bdg b-sub">${c.bank}</span></td>
       <td>${escapeHTML(c.payee)}</td>
-      <td style="color: var(--ink-dim); font-size: 12px;">${escapeHTML(c.memo || '')}</td>
-      <td><span class="pill pill-${c.currency.toLowerCase()}">${c.currency}</span></td>
-      <td class="amount-cell">${formatAmount(c.amount, c.currency)}</td>
-      <td class="action-cell">
-        <button class="btn btn-sm" onclick="loadChequeFromRegister('${c.id}')">↗ Open</button>
-        <button class="btn btn-sm btn-ghost btn-danger" onclick="deleteChequeFromRegister('${c.id}')">✕</button>
+      <td style="color:var(--t2);font-size:11px">${escapeHTML(c.memo || '')}</td>
+      <td><span class="bdg ${currencyBadgeClass(c.currency)}">${c.currency}</span></td>
+      <td class="num">${formatAmount(c.amount, c.currency)}</td>
+      <td style="text-align:right;white-space:nowrap">
+        <button class="btn btn-xs" onclick="loadChequeFromRegister('${c.id}')">↗ Open</button>
+        <button class="btn btn-xs btn-danger-ghost" onclick="deleteChequeFromRegister('${c.id}')">✕</button>
       </td>
     </tr>
   `).join('');
@@ -2660,11 +2605,22 @@ function exportCSV() {
 function escapeHTML(s) {
   return String(s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 }
+
+function currencyBadgeClass(cur) {
+  switch (cur) {
+    case 'MVR': return 'b-app';   // teal
+    case 'USD': return 'b-paid';  // green
+    case 'INR': return 'b-rej';   // red
+    case 'EUR': return 'b-chk';   // indigo
+    case 'GBP': return 'b-pap';   // amber
+    default: return 'b-draft';
+  }
+}
 let toastTimeout;
 function toast(msg, isError) {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.style.borderColor = isError ? 'var(--danger)' : 'var(--accent)';
+  t.classList.toggle('err', !!isError);
   t.classList.add('show');
   clearTimeout(toastTimeout);
   toastTimeout = setTimeout(() => t.classList.remove('show'), 2500);
@@ -2676,11 +2632,12 @@ function closeHelp() { document.getElementById('help-modal').classList.remove('s
    TABS
    ============================================================ */
 function switchTab(name) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
-  document.getElementById('printer-view').style.display = name === 'printer' ? 'grid' : 'none';
+  document.querySelectorAll('.ni[data-tab]').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.getElementById('printer-view').style.display = name === 'printer' ? 'block' : 'none';
   document.getElementById('payees-view').style.display = name === 'payees' ? 'block' : 'none';
   document.getElementById('register-view').style.display = name === 'register' ? 'block' : 'none';
-  document.getElementById('print-btn').style.display = name === 'printer' ? 'inline-flex' : 'none';
+  const printBtn = document.getElementById('print-btn');
+  if (printBtn) printBtn.style.display = name === 'printer' ? 'inline-flex' : 'none';
   if (name === 'register') renderRegister();
   if (name === 'payees') renderPayees();
 }
@@ -2690,7 +2647,6 @@ function switchTab(name) {
    ============================================================ */
 window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('date').value = new Date().toISOString().split('T')[0];
-  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
   applyPositions();
   initFontSizesForBank(document.getElementById('bank').value);
   loadCrossingChoice(document.getElementById('bank').value);
