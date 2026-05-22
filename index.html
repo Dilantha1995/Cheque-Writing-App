@@ -184,7 +184,11 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, sans-serif; backg
   cursor: pointer; user-select: none;
   font-size: 12px; color: var(--text);
 }
-.tgl input[type="checkbox"] { position: absolute; opacity: 0; pointer-events: none; }
+/* Hide checkbox visually but keep it accessible & clickable */
+.tgl input[type="checkbox"] {
+  width: 0; height: 0; margin: 0; padding: 0;
+  opacity: 0; flex-shrink: 0; border: 0;
+}
 .tgl-switch {
   width: 30px; height: 17px; background: var(--border2);
   border-radius: 17px; position: relative;
@@ -196,11 +200,9 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, sans-serif; backg
   border-radius: 50%; transition: transform .15s;
   box-shadow: 0 1px 2px rgba(0,0,0,.15);
 }
-.tgl:has(input:checked) .tgl-switch { background: var(--blue); }
-.tgl:has(input:checked) .tgl-switch::after { transform: translateX(13px); }
-/* Fallback for older browsers without :has() */
-.tgl input:checked ~ .tgl-switch { background: var(--blue); }
-.tgl input:checked ~ .tgl-switch::after { transform: translateX(13px); }
+/* JS sets data-on="1" on the label when input is checked */
+.tgl[data-on="1"] .tgl-switch { background: var(--blue); }
+.tgl[data-on="1"] .tgl-switch::after { transform: translateX(13px); }
 
 /* ── TABLES ── */
 .tw { overflow-x: auto; }
@@ -1708,8 +1710,8 @@ function onBankChange() {
   loadCrossingChoice(bank);
   onCrossingToggle(); // sync UI opacity
   applyBackground();
+  if (typeof syncAllToggles === 'function') syncAllToggles();
   updateFields();
-  // Auto-fit runs after layout has settled
   requestAnimationFrame(applyAutoFit);
 }
 
@@ -2514,6 +2516,7 @@ function loadChequeFromRegister(id) {
   onCrossingToggle();
 
   applyPositions();
+  if (typeof syncAllToggles === 'function') syncAllToggles();
   updateFields();
   switchTab('printer');
   toast('Loaded: ' + c.payee);
@@ -2701,6 +2704,7 @@ window.addEventListener('DOMContentLoaded', () => {
   onCrossingToggle();
   applyBackground();
   setupDragHandlers();
+  setupToggles();
   updateFields();
   renderRegister();
   setTimeout(() => {
@@ -2708,6 +2712,45 @@ window.addEventListener('DOMContentLoaded', () => {
     applyAutoFit();
   }, 100);
 });
+
+/* ── TOGGLE STATE SYNC ──
+   CSS sibling selectors for the hidden checkbox are fragile across browsers.
+   We mirror the input's checked state onto the parent .tgl label as data-on="1".
+   This runs on init AND on every toggle change. */
+function setupToggles() {
+  document.querySelectorAll('.tgl').forEach(label => {
+    const input = label.querySelector('input[type="checkbox"]');
+    if (!input) return;
+    syncToggle(label, input);
+
+    // Replace the label's default toggle behavior with explicit handling.
+    // This prevents the browser scrolling the focused (hidden) input into view,
+    // which was causing the page to jump to the top on click.
+    label.addEventListener('click', (e) => {
+      // Ignore clicks on inner interactive elements (none expected, but safe)
+      if (e.target.tagName === 'A' || e.target.tagName === 'BUTTON') return;
+      e.preventDefault();
+      input.checked = !input.checked;
+      syncToggle(label, input);
+      // Fire change event so existing onchange handlers run
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+    // Defensive: also handle direct input changes (e.g. keyboard navigation)
+    input.addEventListener('change', () => syncToggle(label, input));
+  });
+}
+function syncToggle(label, input) {
+  if (input.checked) label.setAttribute('data-on', '1');
+  else label.removeAttribute('data-on');
+}
+/* Re-sync any toggle that was changed programmatically (e.g. via JS .checked = ...) */
+function syncAllToggles() {
+  document.querySelectorAll('.tgl').forEach(label => {
+    const input = label.querySelector('input[type="checkbox"]');
+    if (input) syncToggle(label, input);
+  });
+}
 
 document.getElementById('help-modal').addEventListener('click', (e) => {
   if (e.target.id === 'help-modal') closeHelp();
