@@ -176,7 +176,7 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, sans-serif; backg
 .fhint { font-size: 11px; color: var(--t2); margin-top: 4px; line-height: 1.4; }
 .fhint code { background: var(--s2); padding: 1px 5px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 10px; }
 
-/* ── TOGGLE SWITCH ── */
+/* ── TOGGLE SWITCH (pure-JS, no checkbox; toggle state via data-on) ── */
 .tgl {
   display: flex; align-items: center; gap: 10px;
   padding: 8px 11px; background: var(--s2);
@@ -184,10 +184,10 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, sans-serif; backg
   cursor: pointer; user-select: none;
   font-size: 12px; color: var(--text);
 }
-/* Hide checkbox visually but keep it accessible & clickable */
+.tgl:hover { background: var(--s3); }
+/* The checkbox input is just a state-holder, completely hidden */
 .tgl input[type="checkbox"] {
-  width: 0; height: 0; margin: 0; padding: 0;
-  opacity: 0; flex-shrink: 0; border: 0;
+  display: none !important;
 }
 .tgl-switch {
   width: 30px; height: 17px; background: var(--border2);
@@ -200,7 +200,6 @@ html, body { height: 100%; font-family: 'Segoe UI', system-ui, sans-serif; backg
   border-radius: 50%; transition: transform .15s;
   box-shadow: 0 1px 2px rgba(0,0,0,.15);
 }
-/* JS sets data-on="1" on the label when input is checked */
 .tgl[data-on="1"] .tgl-switch { background: var(--blue); }
 .tgl[data-on="1"] .tgl-switch::after { transform: translateX(13px); }
 
@@ -331,11 +330,11 @@ input[type="range"]::-moz-range-thumb {
 /* Field-type variants */
 .field-payee { font-size: 11pt; }
 .field-words { font-size: 10pt; font-style: italic; }
-.field-words-dv { font-size: 11pt; font-family: 'Faruma', 'A_Faruma', system-ui, sans-serif; direction: rtl; font-style: normal; }
 .field-amount { font-size: 12pt; font-weight: 600; padding: 1mm 3mm; background: rgba(0,0,0,.03); border-radius: 2px; }
 .field-date { font-size: 11pt; letter-spacing: .15em; }
 .field-signature { font-size: 9pt; font-family: 'Segoe UI', serif; font-style: italic; }
 .field-account-payee { font-size: 7pt; font-family: 'Segoe UI', sans-serif; font-weight: 700; letter-spacing: .1em; }
+.field-box.hidden-force { display: none !important; }
 .field-account-payee .ac-stamp { border: 1.5px solid currentColor; padding: 1mm 2mm; border-radius: 1mm; display: inline-block; text-align: center; line-height: 1.2; }
 .field-account-payee.style-stamp-rotated .ac-stamp { transform: rotate(-12deg); }
 .field-account-payee.style-parallel-lines .ac-stamp { border: none; padding: 1mm 0; border-top: 1.2pt solid currentColor; border-bottom: 1.2pt solid currentColor; border-radius: 0; padding-left: 3mm; padding-right: 3mm; }
@@ -520,7 +519,7 @@ body.preview-mode.print-with-bg .cheque-bg { display: block !important; }
     <div class="logo-box">CP</div>
     <div class="logo-text">
       Cheque Printer
-      <small>Maldives Banks · Multi-Currency · Bilingual</small>
+      <small>Maldives Banks · Multi-Currency · v2.5</small>
     </div>
   </div>
   <div class="topbar-right">
@@ -585,11 +584,11 @@ body.preview-mode.print-with-bg .cheque-bg { display: block !important; }
                   <input type="date" class="fi" id="date" oninput="updateFields()">
                 </div>
               </div>
-              <label class="tgl" style="margin-bottom:10px">
-                <input type="checkbox" id="undated" onchange="onUndatedToggle()">
-                  <span class="tgl-switch"></span>
-                  <span>Leave undated (print blank or custom)</span>
-              </label>
+              <div class="tgl" style="margin-bottom:10px" onclick="flipToggle('undated')">
+                <input type="checkbox" id="undated">
+                <span class="tgl-switch"></span>
+                <span>Leave undated (print blank or custom)</span>
+              </div>
               <div class="fg" id="undated-text-field" style="display:none">
                 <label class="fl" for="undated-text">Date Line Text (when undated)</label>
                 <select class="fs" id="undated-text" onchange="onUndatedTextChange()" style="margin-bottom:6px">
@@ -656,7 +655,6 @@ body.preview-mode.print-with-bg .cheque-bg { display: block !important; }
               <div class="fg">
                 <label class="fl">Amount in Words (auto-generated)</label>
                 <div class="al al-i" id="words-display" style="margin: 0; font-style: italic; min-height: 40px;">—</div>
-                <div class="fhint" id="dhivehi-hint" style="display:none">📝 Dhivehi (Thaana) shown when MVR is selected. Toggle below to include on cheque.</div>
               </div>
               <div class="fg">
                 <label class="fl" for="memo">Memo / For (optional)</label>
@@ -665,11 +663,11 @@ body.preview-mode.print-with-bg .cheque-bg { display: block !important; }
             </div>
             <div class="section-h">Crossing &amp; Endorsement</div>
             <div class="cb-tight">
-              <label class="tgl" style="margin-bottom:10px">
-                <input type="checkbox" id="crossing-on" checked onchange="onCrossingToggle()">
-                  <span class="tgl-switch"></span>
-                  <span>Print crossing on cheque</span>
-              </label>
+              <div class="tgl" style="margin-bottom:10px" onclick="flipToggle('crossing-on')">
+                <input type="checkbox" id="crossing-on" checked>
+                <span class="tgl-switch"></span>
+                <span>Print crossing on cheque</span>
+              </div>
               <div id="crossing-options">
                 <div class="fg">
                   <label class="fl" for="crossing-preset">Preset</label>
@@ -711,16 +709,11 @@ body.preview-mode.print-with-bg .cheque-bg { display: block !important; }
             </div>
             <div class="section-h">Output Options</div>
             <div class="cb-tight">
-              <label class="tgl" style="margin-bottom:8px">
-                <input type="checkbox" id="show-dhivehi" checked onchange="updateFields()">
-                  <span class="tgl-switch"></span>
-                  <span>Print Dhivehi line (MVR only)</span>
-              </label>
-              <label class="tgl" style="margin-bottom:0">
-                <input type="checkbox" id="show-currency-prefix" onchange="updateFields()">
-                  <span class="tgl-switch"></span>
-                  <span>Print currency code with amount</span>
-              </label>
+              <div class="tgl" style="margin-bottom:0" onclick="flipToggle('show-currency-prefix')">
+                <input type="checkbox" id="show-currency-prefix">
+                <span class="tgl-switch"></span>
+                <span>Print currency code with amount</span>
+              </div>
               <div class="help-text">Pre-printed cheques already show the currency — keep this OFF for real cheques.</div>
             </div>
           </div>
@@ -737,16 +730,16 @@ body.preview-mode.print-with-bg .cheque-bg { display: block !important; }
                 <input type="file" id="bg-upload" accept="image/*" style="display:none" onchange="handleBgUpload(event)">
                 <button class="btn btn-sm btn-danger-ghost" onclick="removeBackground()" id="bg-remove-btn" style="display:none">✕ Remove</button>
               </div>
-              <label class="tgl" style="margin-bottom:6px">
-                <input type="checkbox" id="bg-show" checked onchange="updateFields()">
-                  <span class="tgl-switch"></span>
-                  <span>Show background in preview</span>
-              </label>
-              <label class="tgl" style="margin-bottom:8px">
-                <input type="checkbox" id="bg-print" onchange="updateFields()">
-                  <span class="tgl-switch"></span>
-                  <span>Include background when printing</span>
-              </label>
+              <div class="tgl" style="margin-bottom:6px" onclick="flipToggle('bg-show')">
+                <input type="checkbox" id="bg-show" checked>
+                <span class="tgl-switch"></span>
+                <span>Show background in preview</span>
+              </div>
+              <div class="tgl" style="margin-bottom:8px" onclick="flipToggle('bg-print')">
+                <input type="checkbox" id="bg-print">
+                <span class="tgl-switch"></span>
+                <span>Include background when printing</span>
+              </div>
               <div class="fg" style="margin-bottom:0">
                 <label class="fl" for="bg-opacity">Preview Opacity <span class="val" id="bg-opacity-value">60%</span></label>
                 <input type="range" id="bg-opacity" min="20" max="100" value="60" step="5" oninput="onBgOpacityChange()">
@@ -760,21 +753,21 @@ body.preview-mode.print-with-bg .cheque-bg { display: block !important; }
               <div><div class="ct">Layout Editor</div><div class="cs">Drag &amp; resize field boxes</div></div>
             </div>
             <div class="cb">
-              <label class="tgl" style="margin-bottom:8px">
-                <input type="checkbox" id="edit-mode-toggle" onchange="toggleEditMode()">
-                  <span class="tgl-switch"></span>
-                  <span>Edit Mode (drag &amp; resize fields)</span>
-              </label>
-              <label class="tgl" style="margin-bottom:8px">
-                <input type="checkbox" id="auto-fit" checked onchange="updateFields()">
-                  <span class="tgl-switch"></span>
-                  <span>Auto-fit text to box width</span>
-              </label>
-              <label class="tgl" style="margin-bottom:8px">
-                <input type="checkbox" id="show-template" onchange="updateFields()">
-                  <span class="tgl-switch"></span>
-                  <span>Show bank header (plain paper)</span>
-              </label>
+              <div class="tgl" style="margin-bottom:8px" onclick="flipToggle('edit-mode-toggle')">
+                <input type="checkbox" id="edit-mode-toggle">
+                <span class="tgl-switch"></span>
+                <span>Edit Mode (drag &amp; resize fields)</span>
+              </div>
+              <div class="tgl" style="margin-bottom:8px" onclick="flipToggle('auto-fit')">
+                <input type="checkbox" id="auto-fit" checked>
+                <span class="tgl-switch"></span>
+                <span>Auto-fit text to box width</span>
+              </div>
+              <div class="tgl" style="margin-bottom:8px" onclick="flipToggle('show-template')">
+                <input type="checkbox" id="show-template">
+                <span class="tgl-switch"></span>
+                <span>Show bank header (plain paper)</span>
+              </div>
               <div class="help-text" style="margin-bottom:10px">In Edit Mode: drag fields to move, drag the corner handle to resize the box. Text shrinks to fit.</div>
               <div class="brow">
                 <button class="btn btn-sm btn-ghost" onclick="resetPositions()">↺ Reset Layout</button>
@@ -860,12 +853,6 @@ body.preview-mode.print-with-bg .cheque-bg { display: block !important; }
                 <div class="field-box field-words field-multiline" data-field="words2" style="top:42mm;left:8mm;width:130mm">
                   <span class="label-tag">Words (line 2)</span>
                   <span class="field-content" id="f-words2"></span>
-                  <span class="resize-handle"></span>
-                </div>
-
-                <div class="field-box field-words-dv field-multiline" data-field="wordsdv" style="top:51mm;left:30mm;width:130mm">
-                  <span class="label-tag">Words (Dhivehi)</span>
-                  <span class="field-content" id="f-wordsdv"></span>
                   <span class="resize-handle"></span>
                 </div>
 
@@ -1023,9 +1010,6 @@ body.preview-mode.print-with-bg .cheque-bg { display: block !important; }
         2. Background is preview-only by default — toggle on for plain paper.<br>
         3. In the print dialog: paper size <b>178×84mm</b>, margins <b>None</b>, headers/footers <b>off</b>.
       </div>
-      <div class="al al-w"><b>Bilingual amounts</b><br>
-        For MVR, the Dhivehi amount is generated automatically (Sofwath/NumberToThaana vocabulary). Toggle <i>Print Dhivehi line</i> to include in output.
-      </div>
       <div class="al"><b>Undated cheques</b><br>
         Toggle <i>Leave undated</i> to skip the date. Choose to leave blank, print a placeholder, or write custom text.
       </div>
@@ -1152,71 +1136,12 @@ function numberToWordsIndian(num) {
   return words.trim();
 }
 
-/* ============================================================
-   DHIVEHI NUMBER-TO-WORDS
-   Ported from Sofwath/NumberToThaana (MIT-style open source)
-   https://github.com/Sofwath/NumberToThaana
-   ============================================================ */
-const dv_ehbari = ["ސުމެއް","އެއް","ދެ","ތިން","ހަތަރު","ފަސް","ހަ","ހަތް","އަށް","ނުވަ","ދިހަ","އެގާރަ","ބާރަ","ތޭރަ","ސާދަ","ފަނަރަ","ސޯޅަ","ސަތާރަ","އަށާރަ","ނަވާރަ","ވިހި","އެކާވީސް","ބާވީސް","ތޭވީސް","ސައުވީސް","ފަންސަވީސް","ސައްބީސް","ހަތާވީސް","އަށާވީސް","ނަވާވީސް"];
-const dv_dhihabari = ["ސުން","ދިހަ","ވިހި","ތިރީސް","ސާޅީސް","ފަންސާސް","ފަސްދޮޅަސް","ހައްދިހަ","އައްޑިހަ","ނުވަދިހަ"];
-const dv_sunbari = ["","ހާސް","މިލިޔަން","ބިލިޔަން","ޓްރިލިޔަން"];
-
-function dvHaasSub(number) {
-  number = parseInt(number, 10);
-  let satheyka = "ސަތޭކަ ";
-  if (number >= 0 && number <= 29) {
-    return dv_ehbari[number];
-  } else if (number >= 30 && number <= 99) {
-    const tens = Math.floor(number / 10);
-    const ones = number % 10;
-    if (ones === 0) return dv_dhihabari[tens];
-    return dv_dhihabari[tens] + " " + dv_ehbari[ones];
-  } else if (number >= 100 && number <= 999) {
-    const rem = number % 100;
-    const dig = Math.floor(number / 100);
-    let digWord = dv_ehbari[dig];
-    if (dig === 2) {
-      digWord = "ދުވި";
-      satheyka = "ސައްތަ ";
-    }
-    if (rem === 0) return digWord + satheyka.trim();
-    return digWord + satheyka + dvHaasSub(rem);
-  }
-  return "";
-}
-function dvHaasBuri(number) {
-  const arr = [];
-  while (number !== 0) {
-    arr.push(number % 1000);
-    number = Math.floor(number / 1000);
-  }
-  return arr;
-}
-function numberToDhivehi(input) {
-  const number = parseInt(input, 10);
-  if (isNaN(number) || number < 0) return "";
-  if (number === 0) return dv_ehbari[0];
-  if (number < 1000) return dvHaasSub(number);
-  const arr = dvHaasBuri(number);
-  let lenArr = arr.length - 1;
-  const resArr = [];
-  for (const z of arr.slice().reverse()) {
-    let wrd = dvHaasSub(z) + " ";
-    let zap = dv_sunbari[lenArr] + " ";
-    if (wrd === " ") break;
-    if (wrd === "ސުން ") { wrd = ""; zap = ""; }
-    resArr.push(wrd + zap);
-    lenArr -= 1;
-  }
-  return resArr.join("").trim();
-}
 
 /* ============================================================
    CURRENCY CONFIG
    ============================================================ */
 const CURRENCIES = {
-  MVR: { code: 'MVR', symbol: 'Rf', major: 'Rufiyaa', minor: 'Laari', system: 'intl', minorDivisor: 100,
-         dvMajor: 'ރުފިޔާ', dvMinor: 'ލާރި' },
+  MVR: { code: 'MVR', symbol: 'Rf', major: 'Rufiyaa', minor: 'Laari', system: 'intl', minorDivisor: 100 },
   USD: { code: 'USD', symbol: '$', major: 'Dollars', minor: 'Cents', system: 'intl', minorDivisor: 100 },
   INR: { code: 'INR', symbol: '₹', major: 'Rupees', minor: 'Paise', system: 'indian', minorDivisor: 100 },
   EUR: { code: 'EUR', symbol: '€', major: 'Euros', minor: 'Cents', system: 'intl', minorDivisor: 100 },
@@ -1237,20 +1162,6 @@ function amountToWords(amount, currencyCode) {
     result += toWords(minor) + ' ' + cur.minor;
   }
   if (result) result += ' Only';
-  return result;
-}
-
-function amountToDhivehi(amount) {
-  if (!amount || isNaN(amount) || amount <= 0) return '';
-  const major = Math.floor(amount);
-  const minor = Math.round((amount - major) * 100);
-  let result = '';
-  if (major > 0) result = numberToDhivehi(major) + ' ' + CURRENCIES.MVR.dvMajor;
-  if (minor > 0) {
-    if (result) result += ' އަދި ';   // "and"
-    result += numberToDhivehi(minor) + ' ' + CURRENCIES.MVR.dvMinor;
-  }
-  if (result) result += ' އެކަންޏެވެ.';  // "only."
   return result;
 }
 
@@ -1275,7 +1186,6 @@ const DEFAULT_POSITIONS = {
   payee:   { top: 22, left: 22,  width: 110 },
   words1:  { top: 32, left: 30,  width: 100 },
   words2:  { top: 41, left: 8,   width: 130 },
-  wordsdv: { top: 50, left: 30,  width: 130 },
   amount:  { top: 32, left: 138, width: 35  },
   acpayee: { top: 14, left: 2,   width: 30  },
   memo:    { top: 62, left: 8,   width: 80  },
@@ -1311,7 +1221,6 @@ const DEFAULT_FONT_SIZES = {
   payee:    11,
   words1:   10,
   words2:   10,
-  wordsdv:  11,
   amount:   12,
   acpayee:   7,
   memo:      9,
@@ -1322,7 +1231,6 @@ const FIELD_LABELS = {
   payee:   'Payee Name',
   words1:  'Amount in Words (line 1)',
   words2:  'Amount in Words (line 2)',
-  wordsdv: 'Amount in Dhivehi',
   amount:  'Amount (figures)',
   acpayee: 'Crossing / Stamp',
   memo:    'Memo / For',
@@ -1491,7 +1399,6 @@ function updateFields() {
   const chequeNo = document.getElementById('cheque-no').value;
   const memo = document.getElementById('memo').value;
   const showTemplate = document.getElementById('show-template').checked;
-  const showDhivehi = document.getElementById('show-dhivehi').checked;
   const undated = document.getElementById('undated').checked;
   const crossingOn = document.getElementById('crossing-on').checked;
 
@@ -1550,20 +1457,8 @@ function updateFields() {
   document.getElementById('f-words1').textContent = line1 || '—';
   document.getElementById('f-words2').textContent = line2;
 
-  // Dhivehi words (only for MVR)
-  const dhivehiWords = currency === 'MVR' ? amountToDhivehi(amount) : '';
-  const wordsDvEl = document.getElementById('f-wordsdv');
-  wordsDvEl.textContent = dhivehiWords;
-  document.querySelector('[data-field="wordsdv"]').style.display =
-    (currency === 'MVR' && showDhivehi && dhivehiWords) ? 'flex' : 'none';
-
   // Sidebar display
-  document.getElementById('words-display').innerHTML =
-    (words || '—') +
-    (currency === 'MVR' && dhivehiWords
-      ? `<div class="words-dhivehi">${dhivehiWords}</div>`
-      : '');
-  document.getElementById('dhivehi-hint').style.display = currency === 'MVR' ? 'block' : 'none';
+  document.getElementById('words-display').textContent = words || '—';
 
   // Crossing
   applyCrossing(crossingOn);
@@ -1600,6 +1495,9 @@ function onCrossingToggle() {
   const on = document.getElementById('crossing-on').checked;
   document.getElementById('crossing-options').style.opacity = on ? '1' : '0.4';
   document.getElementById('crossing-options').style.pointerEvents = on ? 'auto' : 'none';
+  // Apply visibility DIRECTLY first so it can't be missed by downstream logic
+  applyCrossing(on);
+  persistCrossingChoice();
   updateFields();
 }
 
@@ -1648,12 +1546,30 @@ function getCrossingText() {
 
 function applyCrossing(on) {
   const box = document.querySelector('[data-field="acpayee"]');
-  if (!on) { box.style.display = 'none'; return; }
+  if (!box) return;
+  const stampEl = document.getElementById('f-acpayee');
+  if (!on) {
+    box.classList.add('hidden-force');
+    box.style.display = 'none';
+    box.style.visibility = 'hidden';
+    box.setAttribute('aria-hidden', 'true');
+    if (stampEl) {
+      stampEl.style.visibility = 'hidden';
+      stampEl.style.display = 'none';
+    }
+    return;
+  }
+  box.classList.remove('hidden-force');
   box.style.display = 'flex';
+  box.style.visibility = '';
+  box.removeAttribute('aria-hidden');
+  if (stampEl) {
+    stampEl.style.visibility = '';
+    stampEl.style.display = '';
+  }
 
   const text = getCrossingText();
   const style = document.getElementById('crossing-style').value;
-  const stampEl = document.getElementById('f-acpayee');
 
   // Apply style class
   box.classList.remove('style-stamp', 'style-stamp-rotated', 'style-parallel-lines', 'style-plain');
@@ -2704,7 +2620,7 @@ window.addEventListener('DOMContentLoaded', () => {
   onCrossingToggle();
   applyBackground();
   setupDragHandlers();
-  setupToggles();
+  syncAllToggles();
   updateFields();
   renderRegister();
   setTimeout(() => {
@@ -2717,38 +2633,61 @@ window.addEventListener('DOMContentLoaded', () => {
    CSS sibling selectors for the hidden checkbox are fragile across browsers.
    We mirror the input's checked state onto the parent .tgl label as data-on="1".
    This runs on init AND on every toggle change. */
-function setupToggles() {
-  document.querySelectorAll('.tgl').forEach(label => {
-    const input = label.querySelector('input[type="checkbox"]');
-    if (!input) return;
-    syncToggle(label, input);
+/* ============================================================
+   TOGGLE SWITCH — simple, direct, bulletproof.
+   Each .tgl div has onclick="flipToggle('input-id')".
+   ============================================================ */
+function flipToggle(id) {
+  const input = document.getElementById(id);
+  if (!input) { console.warn('[flipToggle] No input found for id:', id); return; }
+  input.checked = !input.checked;
+  syncToggleById(id);
+  console.log('[flipToggle]', id, '→', input.checked);
 
-    // The browser handles the label→input toggle natively.
-    // We just listen for the resulting change event and sync the visual state.
-    // We also use 'change' (not 'click') to avoid double-firing.
-    input.addEventListener('change', () => syncToggle(label, input));
+  // IMMEDIATE DIRECT EFFECTS — guaranteed to apply regardless of downstream logic
+  if (id === 'crossing-on') {
+    const box = document.querySelector('[data-field="acpayee"]');
+    const stamp = document.getElementById('f-acpayee');
+    if (box) {
+      if (input.checked) {
+        box.classList.remove('hidden-force');
+        box.style.display = 'flex';
+        box.style.visibility = '';
+        if (stamp) { stamp.style.display = ''; stamp.style.visibility = ''; }
+      } else {
+        box.classList.add('hidden-force');
+        box.style.display = 'none';
+        box.style.visibility = 'hidden';
+        if (stamp) { stamp.style.display = 'none'; stamp.style.visibility = 'hidden'; }
+      }
+    }
+  }
 
-    // Prevent the browser's "scroll focused input into view" behavior that
-    // causes the page to jump on click. We blur the input immediately after focus.
-    input.addEventListener('focus', () => {
-      // Save the current scroll position
-      const x = window.scrollX, y = window.scrollY;
-      requestAnimationFrame(() => {
-        input.blur();
-        window.scrollTo(x, y);
-      });
-    });
-  });
+  // Call the right handler for each toggle
+  switch (id) {
+    case 'undated':              onUndatedToggle(); break;
+    case 'crossing-on':          onCrossingToggle(); break;
+    case 'show-currency-prefix': updateFields(); break;
+    case 'bg-show':              updateFields(); break;
+    case 'bg-print':             updateFields(); break;
+    case 'edit-mode-toggle':     toggleEditMode(); break;
+    case 'auto-fit':             updateFields(); break;
+    case 'show-template':        updateFields(); break;
+  }
 }
-function syncToggle(label, input) {
+
+function syncToggleById(id) {
+  const input = document.getElementById(id);
+  if (!input) return;
+  const label = input.closest('.tgl');
+  if (!label) return;
   if (input.checked) label.setAttribute('data-on', '1');
   else label.removeAttribute('data-on');
 }
-/* Re-sync any toggle that was changed programmatically (e.g. via JS .checked = ...) */
+
 function syncAllToggles() {
-  document.querySelectorAll('.tgl').forEach(label => {
-    const input = label.querySelector('input[type="checkbox"]');
-    if (input) syncToggle(label, input);
+  document.querySelectorAll('.tgl input[type="checkbox"]').forEach(input => {
+    syncToggleById(input.id);
   });
 }
 
