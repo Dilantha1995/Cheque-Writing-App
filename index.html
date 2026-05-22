@@ -185,10 +185,33 @@
   }
   .cheque-meta { text-align: right; font-family: 'Inter', sans-serif; font-size: 7pt; color: #5a6478; }
 
-  /* Draggable field */
+  /* CHEQUE BACKGROUND */
+  .bg-status { display: flex; gap: 12px; align-items: stretch; }
+  .bg-preview {
+    flex: 1; height: 60px; background: var(--panel-2); border: 1px dashed var(--border);
+    border-radius: 6px; overflow: hidden; position: relative;
+    background-size: cover; background-position: center;
+  }
+  .bg-empty {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    color: var(--ink-dim); font-size: 11px; font-style: italic;
+  }
+  .bg-preview.has-image .bg-empty { display: none; }
+  .bg-actions { display: flex; flex-direction: column; gap: 4px; justify-content: center; }
+
+  /* CHEQUE BACKGROUND IMAGE OVERLAY */
+  .cheque-bg {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    background-size: contain; background-repeat: no-repeat; background-position: center;
+    pointer-events: none; z-index: 0;
+    opacity: 0.6;
+  }
+  body.print-with-bg .cheque-bg { opacity: 1 !important; }
+
+  /* FIELD BOX with width and resize */
   .field-box {
     position: absolute;
-    padding: 1mm 2mm;
+    padding: 0.5mm 1.5mm;
     font-family: 'JetBrains Mono', monospace;
     font-size: 11pt;
     color: var(--paper-ink);
@@ -199,10 +222,29 @@
     min-height: 5mm;
     display: flex; align-items: center;
     z-index: 2;
+    overflow: hidden;
   }
-  .field-box.edit-mode { border-color: rgba(0,150,200,0.5); background: rgba(0,150,200,0.06); }
+  .field-box.field-multiline { white-space: normal; line-height: 1.2; align-items: flex-start; }
+  .field-box.edit-mode {
+    border-color: rgba(0,150,200,0.5);
+    background: rgba(0,150,200,0.06);
+    overflow: visible;
+  }
   .field-box.edit-mode:hover { background: rgba(0,150,200,0.12); }
-  .field-box.dragging { opacity: 0.7; border-color: var(--accent); border-style: solid; }
+  .field-box.dragging { opacity: 0.85; border-color: var(--accent); border-style: solid; }
+  .field-box.resizing { border-color: var(--accent-2); border-style: solid; }
+  .field-box .resize-handle {
+    position: absolute; right: -4px; bottom: -4px;
+    width: 12px; height: 12px;
+    background: #0096c8; border: 2px solid white; border-radius: 50%;
+    cursor: nwse-resize; display: none; z-index: 3;
+  }
+  .field-box.edit-mode .resize-handle { display: block; }
+  .field-box .field-content {
+    display: inline-block; width: 100%;
+    transform-origin: left center;
+  }
+  .field-box.field-multiline .field-content { transform-origin: left top; }
   .field-box .label-tag {
     position: absolute; top: -14px; left: 0; font-size: 8px; color: #0096c8;
     font-family: 'Inter', sans-serif; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;
@@ -443,11 +485,33 @@
   .helper-text { font-size: 11px; color: var(--ink-dim); margin-top: 6px; line-height: 1.5; }
 
   /* PRINT */
+  /* PRINT PREVIEW MODE — clean view simulating what will print */
+  body.preview-mode .field-box { border-color: transparent !important; background: transparent !important; }
+  body.preview-mode .field-box .label-tag { display: none !important; }
+  body.preview-mode .field-box .resize-handle { display: none !important; }
+  body.preview-mode .cheque-lines { display: none !important; }
+  body.preview-mode .field-amount { background: transparent !important; }
+  body.preview-mode .cheque {
+    background-image: none !important;
+    background: white !important;
+  }
+  body.preview-mode #cheque-wrapper {
+    border: 1px solid #ccc;
+    background: white;
+  }
+  body.preview-mode .cheque-bg {
+    opacity: 1 !important;
+    /* show in preview-mode only if bg-print toggle is on */
+    display: none !important;
+  }
+  body.preview-mode.print-with-bg .cheque-bg { display: block !important; }
+
   @media print {
     @page { size: 178mm 84mm; margin: 0; }
     html, body { background: white !important; }
     header.app-header, aside.sidebar, .preview-controls, .field-box .label-tag,
-    .cheque-lines, .toast, .modal-backdrop, #register-view, #payees-view {
+    .cheque-lines, .toast, .modal-backdrop, #register-view, #payees-view,
+    .resize-handle {
       display: none !important;
     }
     main.preview-area { padding: 0 !important; }
@@ -460,12 +524,22 @@
       background-image: none !important;
       background: white !important;
       width: 178mm; height: 84mm;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
     .field-box { border: none !important; background: transparent !important; }
     .field-amount { background: transparent !important; }
     .cheque-header, .micr-strip { display: none !important; }
     body.print-with-template .cheque-header,
     body.print-with-template .micr-strip { display: flex !important; }
+    /* Background image: hide by default during print, show only if user opted in */
+    .cheque-bg { display: none !important; }
+    body.print-with-bg .cheque-bg {
+      display: block !important;
+      opacity: 1 !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
   }
 
   /* SCROLLBAR */
@@ -657,25 +731,66 @@
 
     <!-- Layout -->
     <div class="section">
+      <h2 class="section-title">Cheque Background</h2>
+      <div id="bg-status" class="bg-status">
+        <div class="bg-preview" id="bg-preview">
+          <div class="bg-empty">No image uploaded for this bank</div>
+        </div>
+        <div class="bg-actions">
+          <button class="btn btn-sm" onclick="document.getElementById('bg-upload').click()">📷 Upload Scan</button>
+          <input type="file" id="bg-upload" accept="image/*" style="display:none" onchange="handleBgUpload(event)">
+          <button class="btn btn-sm btn-ghost btn-danger" onclick="removeBackground()" id="bg-remove-btn" style="display:none;">✕ Remove</button>
+        </div>
+      </div>
+      <p class="helper-text">Upload a scan/photo of your blank cheque from this bank. Use it to align fields exactly. Saved per bank. The background is preview-only by default — toggle below to include it when printing.</p>
+      <div class="toggle-switch" style="margin-top: 10px;">
+        <input type="checkbox" id="bg-print" onchange="updateFields()">
+        <label for="bg-print">
+          <span class="switch"></span>
+          <span>Include background when printing (plain paper)</span>
+        </label>
+      </div>
+      <div class="toggle-switch" style="margin-top: 8px;">
+        <input type="checkbox" id="bg-show" checked onchange="updateFields()">
+        <label for="bg-show">
+          <span class="switch"></span>
+          <span>Show background in preview</span>
+        </label>
+      </div>
+      <div class="field" style="margin-top: 10px;">
+        <label class="field-label" for="bg-opacity">Preview opacity <span class="font-value" id="bg-opacity-value">60%</span></label>
+        <input type="range" id="bg-opacity" min="20" max="100" value="60" step="5" oninput="onBgOpacityChange()">
+      </div>
+    </div>
+
+    <!-- Layout -->
+    <div class="section">
       <h2 class="section-title">Layout Editor</h2>
       <div class="toggle-switch" style="margin-bottom: 10px;">
         <input type="checkbox" id="edit-mode-toggle" onchange="toggleEditMode()">
         <label for="edit-mode-toggle">
           <span class="switch"></span>
-          <span>Edit Mode (drag fields to align)</span>
+          <span>Edit Mode (drag &amp; resize fields)</span>
         </label>
       </div>
       <div class="toggle-switch" style="margin-bottom: 10px;">
         <input type="checkbox" id="show-template" onchange="updateFields()">
         <label for="show-template">
           <span class="switch"></span>
-          <span>Show Bank Template (for plain paper)</span>
+          <span>Show Bank Header (for plain paper)</span>
         </label>
       </div>
-      <p class="helper-text">Turn on Edit Mode and drag each field on the cheque preview to match your real cheque. Positions are saved per bank.</p>
+      <div class="toggle-switch" style="margin-bottom: 10px;">
+        <input type="checkbox" id="auto-fit" checked onchange="updateFields()">
+        <label for="auto-fit">
+          <span class="switch"></span>
+          <span>Auto-fit text to field box (shrink if needed)</span>
+        </label>
+      </div>
+      <p class="helper-text">In Edit Mode: <strong>drag</strong> a field to move, <strong>drag the corner handle</strong> to resize the box width. Text auto-shrinks if it overflows. All saved per bank.</p>
       <div class="btn-group" style="margin-top: 10px;">
-        <button class="btn btn-sm btn-ghost" onclick="resetPositions()">↺ Reset</button>
-        <button class="btn btn-sm btn-ghost" onclick="savePositions()">💾 Save Positions</button>
+        <button class="btn btn-sm btn-ghost" onclick="resetPositions()">↺ Reset Layout</button>
+        <button class="btn btn-sm btn-ghost" onclick="savePositions()">💾 Save Layout</button>
       </div>
     </div>
 
@@ -716,6 +831,8 @@
     <div class="preview-controls">
       <span class="mode-pill"><span class="dot"></span><span id="mode-label">Preview</span></span>
       <span style="flex:1"></span>
+      <button class="btn btn-sm" onclick="togglePrintPreview()" id="print-preview-btn">👁 Print Preview</button>
+      <span style="width: 8px;"></span>
       <button class="btn btn-sm" onclick="setZoom(-0.1)">−</button>
       <span class="zoom-display" id="zoom-display">100%</span>
       <button class="btn btn-sm" onclick="setZoom(0.1)">＋</button>
@@ -724,6 +841,9 @@
 
     <div class="cheque-wrapper" id="cheque-wrapper">
       <div class="cheque" id="cheque">
+
+        <!-- Background image (uploaded scan of real cheque) -->
+        <div class="cheque-bg" id="cheque-bg" style="display:none;"></div>
 
         <div class="cheque-header" id="cheque-header" style="display:none;">
           <div>
@@ -743,46 +863,54 @@
           <div class="line" style="top: 28mm;"></div>
         </div>
 
-        <!-- Draggable fields -->
-        <div class="field-box field-date" data-field="date" style="top: 6mm; left: 130mm;">
+        <!-- Draggable & resizable fields -->
+        <div class="field-box field-date" data-field="date" style="top: 6mm; left: 130mm; width: 40mm;">
           <span class="label-tag">Date</span>
           <span class="field-content" id="f-date"></span>
+          <span class="resize-handle"></span>
         </div>
 
-        <div class="field-box field-payee" data-field="payee" style="top: 22mm; left: 22mm;">
+        <div class="field-box field-payee" data-field="payee" style="top: 22mm; left: 22mm; width: 110mm;">
           <span class="label-tag">Payee</span>
           <span class="field-content" id="f-payee">—</span>
+          <span class="resize-handle"></span>
         </div>
 
-        <div class="field-box field-words" data-field="words1" style="top: 33mm; left: 30mm;">
+        <div class="field-box field-words field-multiline" data-field="words1" style="top: 33mm; left: 30mm; width: 100mm;">
           <span class="label-tag">Amount in Words</span>
           <span class="field-content" id="f-words1">—</span>
+          <span class="resize-handle"></span>
         </div>
 
-        <div class="field-box field-words" data-field="words2" style="top: 42mm; left: 8mm;">
+        <div class="field-box field-words field-multiline" data-field="words2" style="top: 42mm; left: 8mm; width: 130mm;">
           <span class="label-tag">Words (line 2)</span>
           <span class="field-content" id="f-words2"></span>
+          <span class="resize-handle"></span>
         </div>
 
-        <div class="field-box field-words-dv" data-field="wordsdv" style="top: 51mm; right: 8mm; left: auto;">
+        <div class="field-box field-words-dv field-multiline" data-field="wordsdv" style="top: 51mm; left: 30mm; width: 130mm;">
           <span class="label-tag">Words (Dhivehi)</span>
           <span class="field-content" id="f-wordsdv"></span>
+          <span class="resize-handle"></span>
         </div>
 
-        <div class="field-box field-amount" data-field="amount" style="top: 33mm; left: 138mm;">
+        <div class="field-box field-amount" data-field="amount" style="top: 33mm; left: 138mm; width: 35mm;">
           <span class="label-tag">Amount (figures)</span>
           <span class="currency-tag" id="f-currency-tag" style="display:none;">MVR</span>
           <span class="field-content" id="f-amount">0.00</span>
+          <span class="resize-handle"></span>
         </div>
 
-        <div class="field-box field-account-payee" data-field="acpayee" style="top: 14mm; left: 2mm;">
+        <div class="field-box field-account-payee" data-field="acpayee" style="top: 14mm; left: 2mm; width: 30mm;">
           <span class="label-tag">Crossing</span>
           <span class="ac-stamp" id="f-acpayee">A/C PAYEE<br>ONLY</span>
+          <span class="resize-handle"></span>
         </div>
 
-        <div class="field-box field-signature" data-field="memo" style="top: 62mm; left: 8mm;">
+        <div class="field-box field-signature" data-field="memo" style="top: 62mm; left: 8mm; width: 80mm;">
           <span class="label-tag">Memo / For</span>
           <span class="field-content" id="f-memo"></span>
+          <span class="resize-handle"></span>
         </div>
 
         <div class="micr-strip" id="micr-strip" style="display:none;">
@@ -795,7 +923,7 @@
     </div>
 
     <p class="helper-text" style="max-width: 800px; text-align: center;">
-      💡 Standard cheque size: <strong>178mm × 84mm</strong>. For real cheques, keep the bank template OFF. For plain paper printing, turn it ON.
+      💡 Standard cheque size: <strong>178mm × 84mm</strong>. Upload a scan of your blank cheque for accurate alignment. In Edit Mode, drag fields to move and use the corner handle to resize. Text auto-shrinks to fit.
     </p>
 
   </main>
@@ -955,15 +1083,17 @@
     <h4 style="margin: 14px 0 6px; font-size: 14px; color: var(--accent);">First-time setup per bank</h4>
     <ol style="padding-left: 20px; line-height: 1.7; font-size: 13px; color: var(--ink-dim);">
       <li>Pick the bank and currency.</li>
-      <li>Enter test values. Turn on <strong>Show Bank Template</strong> to see the cheque outline.</li>
-      <li>Turn on <strong>Edit Mode</strong> and drag each field to match a scan of your real cheque.</li>
-      <li>Click <strong>Save Positions</strong> when done. This bank now remembers its layout.</li>
+      <li><strong>Upload a scan</strong> of your blank cheque in the "Cheque Background" section. This is your alignment reference.</li>
+      <li>Turn on <strong>Edit Mode</strong>. Drag each field on the cheque preview to align with the printed boxes on your scan, and drag the corner handle (▶) to resize each field's width.</li>
+      <li>Text auto-shrinks if it doesn't fit. Use Font Sizes section for manual control.</li>
+      <li>Click <strong>Save Layout</strong> when done. The bank remembers its layout, background image, and font sizes.</li>
+      <li>Click <strong>👁 Print Preview</strong> at any time to see the clean printed output.</li>
     </ol>
     <h4 style="margin: 16px 0 6px; font-size: 14px; color: var(--accent);">Printing</h4>
     <ol style="padding-left: 20px; line-height: 1.7; font-size: 13px; color: var(--ink-dim);">
-      <li>Load a blank cheque into your printer.</li>
-      <li>Click <strong>Print</strong>. In the print dialog, set paper to custom <strong>178×84mm</strong> (or A4 → manual position), margins <strong>None</strong>, headers/footers <strong>off</strong>.</li>
-      <li>For plain-paper test prints, turn on <strong>Show Bank Template</strong> first.</li>
+      <li>Load a blank cheque into your printer (or plain paper if testing).</li>
+      <li>By default the background image is preview-only (won't print). Toggle <em>Include background when printing</em> if you want it on plain paper.</li>
+      <li>Click <strong>Print</strong>. In the print dialog, set paper to custom <strong>178×84mm</strong>, margins <strong>None</strong>, headers/footers <strong>off</strong>.</li>
     </ol>
     <h4 style="margin: 16px 0 6px; font-size: 14px; color: var(--accent);">Office workflow</h4>
     <ol style="padding-left: 20px; line-height: 1.7; font-size: 13px; color: var(--ink-dim);">
@@ -1153,14 +1283,14 @@ const BANKS = {
 };
 
 const DEFAULT_POSITIONS = {
-  date:    { top: 6,  left: 130 },
-  payee:   { top: 22, left: 22  },
-  words1:  { top: 32, left: 30  },
-  words2:  { top: 41, left: 8   },
-  wordsdv: { top: 50, left: 8   },
-  amount:  { top: 32, left: 138 },
-  acpayee: { top: 14, left: 2   },
-  memo:    { top: 62, left: 8   },
+  date:    { top: 6,  left: 130, width: 40  },
+  payee:   { top: 22, left: 22,  width: 110 },
+  words1:  { top: 32, left: 30,  width: 100 },
+  words2:  { top: 41, left: 8,   width: 130 },
+  wordsdv: { top: 50, left: 30,  width: 130 },
+  amount:  { top: 32, left: 138, width: 35  },
+  acpayee: { top: 14, left: 2,   width: 30  },
+  memo:    { top: 62, left: 8,   width: 80  },
 };
 
 /* ============================================================
@@ -1331,6 +1461,7 @@ function applyPositions() {
     if (!el) return;
     el.style.top = pos.top + 'mm';
     el.style.left = pos.left + 'mm';
+    if (pos.width) el.style.width = pos.width + 'mm';
     el.style.right = 'auto';
     el.style.bottom = 'auto';
   });
@@ -1450,6 +1581,12 @@ function updateFields() {
 
   // Crossing
   applyCrossing(crossingOn);
+
+  // Background image
+  applyBackground();
+
+  // Auto-fit text to field boxes (after DOM updates)
+  requestAnimationFrame(applyAutoFit);
 }
 
 /* ============================================================
@@ -1586,7 +1723,10 @@ function onBankChange() {
   initFontSizesForBank(bank);
   loadCrossingChoice(bank);
   onCrossingToggle(); // sync UI opacity
+  applyBackground();
   updateFields();
+  // Auto-fit runs after layout has settled
+  requestAnimationFrame(applyAutoFit);
 }
 
 /* ============================================================
@@ -1600,51 +1740,83 @@ function setupDragHandlers() {
     box.addEventListener('touchstart', startDrag, { passive: false });
   });
 }
+
 function startDrag(e) {
   if (!editMode) return;
   e.preventDefault();
+  e.stopPropagation();
   const box = e.currentTarget;
   const cheque = document.getElementById('cheque');
   const rect = cheque.getBoundingClientRect();
   const boxRect = box.getBoundingClientRect();
   const point = e.touches ? e.touches[0] : e;
+
+  // Detect if user grabbed the resize handle
+  const isResize = e.target.classList && e.target.classList.contains('resize-handle');
+
   dragState = {
     box, field: box.dataset.field,
+    mode: isResize ? 'resize' : 'move',
+    startX: point.clientX,
+    startY: point.clientY,
+    startLeftMm: parseFloat(box.style.left) || 0,
+    startTopMm: parseFloat(box.style.top) || 0,
+    startWidthMm: parseFloat(box.style.width) || boxRect.width * (178 / rect.width),
     offsetX: point.clientX - boxRect.left,
     offsetY: point.clientY - boxRect.top,
     chequeRect: rect,
     mmPerPxX: 178 / rect.width,
     mmPerPxY: 84 / rect.height,
   };
-  box.classList.add('dragging');
+  box.classList.add(isResize ? 'resizing' : 'dragging');
   document.addEventListener('mousemove', doDrag);
   document.addEventListener('mouseup', endDrag);
   document.addEventListener('touchmove', doDrag, { passive: false });
   document.addEventListener('touchend', endDrag);
 }
+
 function doDrag(e) {
   if (!dragState) return;
   e.preventDefault();
   const point = e.touches ? e.touches[0] : e;
-  const x = point.clientX - dragState.chequeRect.left - dragState.offsetX;
-  const y = point.clientY - dragState.chequeRect.top - dragState.offsetY;
-  const leftMm = Math.max(0, x * dragState.mmPerPxX);
-  const topMm = Math.max(0, y * dragState.mmPerPxY);
-  dragState.box.style.left = leftMm.toFixed(1) + 'mm';
-  dragState.box.style.top = topMm.toFixed(1) + 'mm';
-  dragState.box.style.right = 'auto';
-  dragState.box.style.bottom = 'auto';
-  positions[dragState.field] = { top: +topMm.toFixed(1), left: +leftMm.toFixed(1) };
+
+  if (dragState.mode === 'resize') {
+    const deltaXmm = (point.clientX - dragState.startX) * dragState.mmPerPxX;
+    const newWidth = Math.max(5, dragState.startWidthMm + deltaXmm);
+    dragState.box.style.width = newWidth.toFixed(1) + 'mm';
+    if (!positions[dragState.field]) positions[dragState.field] = {};
+    positions[dragState.field].width = +newWidth.toFixed(1);
+    // Re-run auto-fit
+    autoFitField(dragState.field);
+  } else {
+    const x = point.clientX - dragState.chequeRect.left - dragState.offsetX;
+    const y = point.clientY - dragState.chequeRect.top - dragState.offsetY;
+    const leftMm = Math.max(0, x * dragState.mmPerPxX);
+    const topMm = Math.max(0, y * dragState.mmPerPxY);
+    dragState.box.style.left = leftMm.toFixed(1) + 'mm';
+    dragState.box.style.top = topMm.toFixed(1) + 'mm';
+    dragState.box.style.right = 'auto';
+    dragState.box.style.bottom = 'auto';
+    if (!positions[dragState.field]) positions[dragState.field] = {};
+    positions[dragState.field].top = +topMm.toFixed(1);
+    positions[dragState.field].left = +leftMm.toFixed(1);
+    // Keep existing width
+    if (!positions[dragState.field].width) {
+      positions[dragState.field].width = +dragState.startWidthMm.toFixed(1);
+    }
+  }
 }
+
 function endDrag() {
   if (!dragState) return;
-  dragState.box.classList.remove('dragging');
+  dragState.box.classList.remove('dragging', 'resizing');
   dragState = null;
   document.removeEventListener('mousemove', doDrag);
   document.removeEventListener('mouseup', endDrag);
   document.removeEventListener('touchmove', doDrag);
   document.removeEventListener('touchend', endDrag);
 }
+
 function toggleEditMode() {
   editMode = document.getElementById('edit-mode-toggle').checked;
   document.querySelectorAll('.field-box').forEach(b => b.classList.toggle('edit-mode', editMode));
@@ -1653,15 +1825,150 @@ function toggleEditMode() {
 function resetPositions() {
   if (!confirm('Reset all field positions to defaults for this bank?')) return;
   const bank = document.getElementById('bank').value;
-  positions = { ...DEFAULT_POSITIONS };
+  positions = JSON.parse(JSON.stringify(DEFAULT_POSITIONS));
   persistPositions(bank, positions);
   applyPositions();
+  applyAutoFit();
   toast('Positions reset for ' + BANKS[bank].short);
 }
 function savePositions() {
   const bank = document.getElementById('bank').value;
   persistPositions(bank, positions);
-  toast('Positions saved for ' + BANKS[bank].short);
+  toast('Layout saved for ' + BANKS[bank].short);
+}
+
+/* ============================================================
+   AUTO-FIT TEXT TO FIELD BOX
+   Measures content vs box width and scales font down if overflowing.
+   Manual font sizes set via slider are the *target*; auto-fit reduces from there.
+   ============================================================ */
+function autoFitField(field) {
+  const autoFitOn = document.getElementById('auto-fit').checked;
+  const el = document.querySelector(`[data-field="${field}"]`);
+  if (!el) return;
+  const content = el.querySelector('.field-content, .ac-stamp');
+  if (!content) return;
+
+  // Reset any previous scale
+  content.style.transform = '';
+  content.style.fontSize = '';
+
+  if (!autoFitOn) return;
+
+  // Measure: if content's scrollWidth exceeds clientWidth of box, scale down
+  const boxStyle = getComputedStyle(el);
+  const paddingX = parseFloat(boxStyle.paddingLeft) + parseFloat(boxStyle.paddingRight);
+  const availWidth = el.clientWidth - paddingX;
+  if (availWidth <= 0) return;
+
+  // Use scrollWidth which reflects natural width even when overflowing
+  const naturalWidth = content.scrollWidth;
+  if (naturalWidth <= availWidth + 1) return; // fits, no scaling
+
+  const scale = Math.max(0.4, availWidth / naturalWidth);
+  content.style.transform = `scaleX(${scale.toFixed(3)})`;
+}
+
+function applyAutoFit() {
+  Object.keys(DEFAULT_POSITIONS).forEach(autoFitField);
+}
+
+/* ============================================================
+   CHEQUE BACKGROUND IMAGE
+   Stored in localStorage as data URL per bank.
+   Compressed before storage to avoid hitting 5-10MB quota.
+   ============================================================ */
+function loadBgImage(bank) {
+  try {
+    const stored = JSON.parse(localStorage.getItem('cheque-backgrounds') || '{}');
+    return stored[bank] || null;
+  } catch (e) { return null; }
+}
+
+function persistBgImage(bank, dataUrl) {
+  try {
+    const stored = JSON.parse(localStorage.getItem('cheque-backgrounds') || '{}');
+    if (dataUrl) stored[bank] = dataUrl;
+    else delete stored[bank];
+    localStorage.setItem('cheque-backgrounds', JSON.stringify(stored));
+  } catch (e) {
+    toast('Image too large for browser storage. Try a smaller scan.', true);
+  }
+}
+
+function applyBackground() {
+  const bank = document.getElementById('bank').value;
+  const dataUrl = loadBgImage(bank);
+  const showBg = document.getElementById('bg-show').checked;
+  const printBg = document.getElementById('bg-print').checked;
+  const bgEl = document.getElementById('cheque-bg');
+  const previewEl = document.getElementById('bg-preview');
+  const removeBtn = document.getElementById('bg-remove-btn');
+  const opacity = parseInt(document.getElementById('bg-opacity').value, 10) / 100;
+
+  if (dataUrl) {
+    bgEl.style.backgroundImage = `url("${dataUrl}")`;
+    bgEl.style.display = showBg ? 'block' : 'none';
+    bgEl.style.opacity = opacity;
+    previewEl.style.backgroundImage = `url("${dataUrl}")`;
+    previewEl.classList.add('has-image');
+    removeBtn.style.display = 'inline-flex';
+  } else {
+    bgEl.style.display = 'none';
+    bgEl.style.backgroundImage = '';
+    previewEl.style.backgroundImage = '';
+    previewEl.classList.remove('has-image');
+    removeBtn.style.display = 'none';
+  }
+
+  // Print body class for opacity 1 + display when printing
+  document.body.classList.toggle('print-with-bg', printBg && !!dataUrl);
+}
+
+function handleBgUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) {
+    toast('Image is too large. Please use one under 10MB.', true);
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      // Compress / resize to a sensible max width 1600px
+      const maxW = 1600;
+      let w = img.width, h = img.height;
+      if (w > maxW) { h = h * maxW / w; w = maxW; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      const bank = document.getElementById('bank').value;
+      persistBgImage(bank, dataUrl);
+      applyBackground();
+      toast('Background uploaded for ' + BANKS[bank].short);
+    };
+    img.onerror = () => toast('Could not read image', true);
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+}
+
+function removeBackground() {
+  const bank = document.getElementById('bank').value;
+  if (!confirm('Remove cheque background image for ' + BANKS[bank].short + '?')) return;
+  persistBgImage(bank, null);
+  applyBackground();
+  toast('Background removed');
+}
+
+function onBgOpacityChange() {
+  const v = parseInt(document.getElementById('bg-opacity').value, 10);
+  document.getElementById('bg-opacity-value').textContent = v + '%';
+  applyBackground();
 }
 
 /* ============================================================
@@ -1681,10 +1988,39 @@ function setZoom(delta) {
 }
 
 /* ============================================================
+   PRINT PREVIEW
+   Toggles a clean view simulating what the printed cheque will look like.
+   ============================================================ */
+let inPrintPreview = false;
+function togglePrintPreview() {
+  inPrintPreview = !inPrintPreview;
+  document.body.classList.toggle('preview-mode', inPrintPreview);
+  const btn = document.getElementById('print-preview-btn');
+  const modeLabel = document.getElementById('mode-label');
+  if (inPrintPreview) {
+    btn.textContent = '✎ Exit Preview';
+    btn.classList.add('btn-primary');
+    modeLabel.textContent = 'Print Preview';
+    // Auto turn off edit mode in preview
+    if (editMode) {
+      document.getElementById('edit-mode-toggle').checked = false;
+      toggleEditMode();
+    }
+  } else {
+    btn.textContent = '👁 Print Preview';
+    btn.classList.remove('btn-primary');
+    modeLabel.textContent = 'Preview';
+  }
+  // Re-run auto-fit since visible state changed
+  requestAnimationFrame(applyAutoFit);
+}
+
+/* ============================================================
    PRINT
    ============================================================ */
 function printCheque() {
   const wasEdit = editMode;
+  const wasPreview = inPrintPreview;
   if (wasEdit) {
     document.querySelectorAll('.field-box').forEach(b => b.classList.remove('edit-mode'));
   }
@@ -2359,10 +2695,14 @@ window.addEventListener('DOMContentLoaded', () => {
   initFontSizesForBank(document.getElementById('bank').value);
   loadCrossingChoice(document.getElementById('bank').value);
   onCrossingToggle();
+  applyBackground();
   setupDragHandlers();
   updateFields();
   renderRegister();
-  setTimeout(() => setZoom('fit'), 100);
+  setTimeout(() => {
+    setZoom('fit');
+    applyAutoFit();
+  }, 100);
 });
 
 document.getElementById('help-modal').addEventListener('click', (e) => {
