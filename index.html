@@ -705,6 +705,11 @@ body.preview-mode.print-with-bg .cheque-bg { display: block !important; }
                     </select>
                   </div>
                 </div>
+                <div class="fg" style="margin-top:10px;margin-bottom:0">
+                  <label class="fl">Rotation Angle <span class="val" id="crossing-rotation-val">0°</span></label>
+                  <input type="range" id="crossing-rotation" min="-45" max="45" value="0" step="1" oninput="onCrossingRotationChange()">
+                  <div class="help-text" style="margin-top:4px">Tilt the crossing stamp. Saved per bank.</div>
+                </div>
               </div>
             </div>
             <div class="section-h">Output Options</div>
@@ -787,6 +792,11 @@ body.preview-mode.print-with-bg .cheque-bg { display: block !important; }
                 <label class="fl">Scale All Fields <span class="val" id="scale-value">100%</span></label>
                 <input type="range" id="font-scale" min="50" max="200" value="100" step="5" oninput="onFontScaleChange()">
               </div>
+              <div class="fg">
+                <label class="fl">Date Letter-Spacing <span class="val" id="date-spacing-val">0.15em</span></label>
+                <input type="range" id="date-spacing" min="0" max="1.2" value="0.15" step="0.02" oninput="onDateSpacingChange()">
+                <div class="help-text" style="margin-top:4px">Widen the gap between date digits for pre-printed cheque boxes. Saved per bank.</div>
+              </div>
               <div id="font-size-controls"></div>
               <div class="brow" style="margin-top:10px">
                 <button class="btn btn-sm btn-ghost" onclick="resetFontSizes()">↺ Reset</button>
@@ -844,14 +854,14 @@ body.preview-mode.print-with-bg .cheque-bg { display: block !important; }
                   <span class="resize-handle"></span>
                 </div>
 
-                <div class="field-box field-words field-multiline" data-field="words1" style="top:33mm;left:30mm;width:100mm">
-                  <span class="label-tag">Amount in Words</span>
+                <div class="field-box field-words" data-field="words1" style="top:33mm;left:30mm;width:100mm">
+                  <span class="label-tag">Amount in Words (line 1)</span>
                   <span class="field-content" id="f-words1">—</span>
                   <span class="resize-handle"></span>
                 </div>
 
-                <div class="field-box field-words field-multiline" data-field="words2" style="top:42mm;left:8mm;width:130mm">
-                  <span class="label-tag">Words (line 2)</span>
+                <div class="field-box field-words" data-field="words2" style="top:42mm;left:8mm;width:130mm">
+                  <span class="label-tag">Amount in Words (line 2)</span>
                   <span class="field-content" id="f-words2"></span>
                   <span class="resize-handle"></span>
                 </div>
@@ -1238,6 +1248,7 @@ const FIELD_LABELS = {
 
 let fontSizes = { ...DEFAULT_FONT_SIZES };
 let fontScale = 100;
+let dateSpacing = 0.15; // em — adjustable per bank
 
 function loadFontSizes(bank) {
   try {
@@ -1246,16 +1257,22 @@ function loadFontSizes(bank) {
     return {
       sizes: { ...DEFAULT_FONT_SIZES, ...(data.sizes || {}) },
       scale: data.scale || 100,
+      dateSpacing: typeof data.dateSpacing === 'number' ? data.dateSpacing : 0.15,
     };
-  } catch (e) { return { sizes: { ...DEFAULT_FONT_SIZES }, scale: 100 }; }
+  } catch (e) { return { sizes: { ...DEFAULT_FONT_SIZES }, scale: 100, dateSpacing: 0.15 }; }
 }
 
 function persistFontSizes(bank) {
   try {
     const stored = JSON.parse(localStorage.getItem('cheque-fonts') || '{}');
-    stored[bank] = { sizes: fontSizes, scale: fontScale };
+    stored[bank] = { sizes: fontSizes, scale: fontScale, dateSpacing: dateSpacing };
     localStorage.setItem('cheque-fonts', JSON.stringify(stored));
   } catch (e) {}
+}
+
+function applyDateSpacing() {
+  const dateBox = document.querySelector('[data-field="date"]');
+  if (dateBox) dateBox.style.letterSpacing = dateSpacing.toFixed(2) + 'em';
 }
 
 function applyFontSizes() {
@@ -1265,6 +1282,8 @@ function applyFontSizes() {
     const scaled = (size * fontScale / 100).toFixed(1);
     el.style.fontSize = scaled + 'pt';
   });
+  // Re-run auto-fit so target sizes get shrunk to fit where needed
+  requestAnimationFrame(applyAutoFit);
 }
 
 function renderFontControls() {
@@ -1275,7 +1294,7 @@ function renderFontControls() {
       <div>
         <div class="fontrow-label">${FIELD_LABELS[field]}</div>
         <input type="range" min="5" max="24" step="0.5" value="${fontSizes[field]}"
-               data-field="${field}" oninput="onFontSizeChange(this)">
+               data-font-field="${field}" oninput="onFontSizeChange(this)">
       </div>
       <div class="fontrow-val" id="font-val-${field}">${fontSizes[field]}pt</div>
     </div>
@@ -1283,7 +1302,7 @@ function renderFontControls() {
 }
 
 function onFontSizeChange(input) {
-  const field = input.dataset.field;
+  const field = input.dataset.fontField;
   fontSizes[field] = parseFloat(input.value);
   document.getElementById('font-val-' + field).textContent = fontSizes[field] + 'pt';
   applyFontSizes();
@@ -1311,10 +1330,14 @@ function resetFontSizes() {
   if (!confirm('Reset all font sizes to defaults for this bank?')) return;
   fontSizes = { ...DEFAULT_FONT_SIZES };
   fontScale = 100;
+  dateSpacing = 0.15;
   document.getElementById('font-scale').value = 100;
   document.getElementById('scale-value').textContent = '100%';
+  const dsInput = document.getElementById('date-spacing');
+  if (dsInput) { dsInput.value = 0.15; document.getElementById('date-spacing-val').textContent = '0.15em'; }
   renderFontControls();
   applyFontSizes();
+  applyDateSpacing();
   const bank = document.getElementById('bank').value;
   persistFontSizes(bank);
   toast('Font sizes reset for ' + BANKS[bank].short);
@@ -1330,10 +1353,23 @@ function initFontSizesForBank(bank) {
   const data = loadFontSizes(bank);
   fontSizes = data.sizes;
   fontScale = data.scale;
+  dateSpacing = data.dateSpacing;
   document.getElementById('font-scale').value = fontScale;
   document.getElementById('scale-value').textContent = fontScale + '%';
+  const dsInput = document.getElementById('date-spacing');
+  if (dsInput) {
+    dsInput.value = dateSpacing;
+    document.getElementById('date-spacing-val').textContent = dateSpacing.toFixed(2) + 'em';
+  }
   renderFontControls();
   applyFontSizes();
+  applyDateSpacing();
+}
+
+function onDateSpacingChange() {
+  dateSpacing = parseFloat(document.getElementById('date-spacing').value);
+  document.getElementById('date-spacing-val').textContent = dateSpacing.toFixed(2) + 'em';
+  applyDateSpacing();
 }
 
 function loadRegister() {
@@ -1381,12 +1417,38 @@ function formatAmount(amount, currency) {
   return parseFloat(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function splitWordsForCheque(words, maxFirstLine = 55) {
+/* ------------------------------------------------------------
+   Amount-in-words split for the cheque face.
+
+   Always returns TWO lines. Behaviour:
+   - Long text → split at the word-boundary closest to the line-1 capacity,
+     with the remainder flowing to line 2.
+   - Short text → all of it on line 1, line 2 holds only filler dashes
+     (anti-fraud line completion, standard bank practice).
+   - Both lines are then padded with trailing "—" filler so cheques
+     cannot have extra words inserted after the fact.
+
+   Capacity is in characters; the auto-fit pass shrinks font-size to
+   accommodate any overflow, so the numbers here are just a guide.
+   ------------------------------------------------------------ */
+function padWithFiller(line, target) {
+  if (!line) return '—'.repeat(Math.max(8, target));
+  const pad = Math.max(2, target - line.length);
+  return line + ' ' + '—'.repeat(pad);
+}
+
+function splitWordsForCheque(words, line1Cap = 48, line2Cap = 62) {
   if (!words) return ['', ''];
-  if (words.length <= maxFirstLine) return [words, ''];
-  let breakAt = words.lastIndexOf(' ', maxFirstLine);
-  if (breakAt < 20) breakAt = maxFirstLine;
-  return [words.slice(0, breakAt), words.slice(breakAt + 1)];
+  // Fits on line 1
+  if (words.length <= line1Cap) {
+    return [padWithFiller(words, line1Cap), padWithFiller('', line2Cap)];
+  }
+  // Long — split at the last space before line1Cap
+  let breakAt = words.lastIndexOf(' ', line1Cap);
+  if (breakAt < line1Cap * 0.55) breakAt = line1Cap;
+  const first = words.slice(0, breakAt).trim();
+  const rest = words.slice(breakAt).trim();
+  return [padWithFiller(first, line1Cap), padWithFiller(rest, line2Cap)];
 }
 
 function updateFields() {
@@ -1451,10 +1513,10 @@ function updateFields() {
     dateBox.style.display = 'flex';
   }
 
-  // English words
+  // English words — always two lines with smart split + anti-fraud filler dashes
   const words = amountToWords(amount, currency);
   const [line1, line2] = splitWordsForCheque(words);
-  document.getElementById('f-words1').textContent = line1 || '—';
+  document.getElementById('f-words1').textContent = line1;
   document.getElementById('f-words2').textContent = line2;
 
   // Sidebar display
@@ -1529,6 +1591,13 @@ function onCrossingPositionChange() {
   updateFields();
 }
 
+function onCrossingRotationChange() {
+  const deg = parseInt(document.getElementById('crossing-rotation').value, 10);
+  document.getElementById('crossing-rotation-val').textContent = deg + '°';
+  persistCrossingChoice();
+  applyCrossing(document.getElementById('crossing-on').checked);
+}
+
 function getCrossingText() {
   const preset = document.getElementById('crossing-preset').value;
   if (preset === 'custom') {
@@ -1588,6 +1657,15 @@ function applyCrossing(on) {
   } else {
     stampEl.innerHTML = text.split('\n').map(l => escapeHTML(l)).join('<br>');
   }
+
+  // Rotation — slider overrides the style class's fixed -12° when non-zero
+  const rotInput = document.getElementById('crossing-rotation');
+  const rot = rotInput ? parseInt(rotInput.value, 10) : 0;
+  if (rot !== 0) {
+    stampEl.style.transform = `rotate(${rot}deg)`;
+  } else {
+    stampEl.style.transform = ''; // let CSS class (e.g. style-stamp-rotated) take over
+  }
 }
 
 function persistCrossingChoice() {
@@ -1599,6 +1677,7 @@ function persistCrossingChoice() {
       custom:   document.getElementById('crossing-custom').value,
       style:    document.getElementById('crossing-style').value,
       position: document.getElementById('crossing-position').value,
+      rotation: parseInt(document.getElementById('crossing-rotation').value, 10) || 0,
       on:       document.getElementById('crossing-on').checked,
     };
     localStorage.setItem('cheque-crossings', JSON.stringify(stored));
@@ -1606,6 +1685,12 @@ function persistCrossingChoice() {
 }
 
 function loadCrossingChoice(bank) {
+  // Reset rotation to 0 first so a bank without saved rotation doesn't inherit the previous bank's
+  const rotInput = document.getElementById('crossing-rotation');
+  if (rotInput) {
+    rotInput.value = 0;
+    document.getElementById('crossing-rotation-val').textContent = '0°';
+  }
   try {
     const stored = JSON.parse(localStorage.getItem('cheque-crossings') || '{}');
     const c = stored[bank];
@@ -1616,6 +1701,11 @@ function loadCrossingChoice(bank) {
     document.getElementById('crossing-position').value = c.position || 'top-left';
     document.getElementById('crossing-on').checked = c.on !== false;
     document.getElementById('crossing-custom-field').style.display = c.preset === 'custom' ? 'block' : 'none';
+    if (rotInput) {
+      const rot = typeof c.rotation === 'number' ? c.rotation : 0;
+      rotInput.value = rot;
+      document.getElementById('crossing-rotation-val').textContent = rot + '°';
+    }
   } catch (e) {}
 }
 
@@ -1744,6 +1834,11 @@ function savePositions() {
    Measures content vs box width and scales font down if overflowing.
    Manual font sizes set via slider are the *target*; auto-fit reduces from there.
    ============================================================ */
+/* ============================================================
+   AUTO-FIT — shrinks font-size (not scaleX-distorts) until the
+   content fits the box's available width. Restores to the user's
+   chosen target size whenever the text becomes short enough.
+   ============================================================ */
 function autoFitField(field) {
   const autoFitOn = document.getElementById('auto-fit').checked;
   const el = document.querySelector(`[data-field="${field}"]`);
@@ -1751,24 +1846,30 @@ function autoFitField(field) {
   const content = el.querySelector('.field-content, .ac-stamp');
   if (!content) return;
 
-  // Reset any previous scale
+  // Clean up any leftover transform from older versions
   content.style.transform = '';
-  content.style.fontSize = '';
+
+  // Target size = user-chosen pt × global scale
+  const targetPt = (fontSizes[field] || 11) * (fontScale / 100);
+  el.style.fontSize = targetPt.toFixed(2) + 'pt';
 
   if (!autoFitOn) return;
+  // Box hidden? skip.
+  if (el.classList.contains('hidden-force') || el.style.display === 'none') return;
 
-  // Measure: if content's scrollWidth exceeds clientWidth of box, scale down
   const boxStyle = getComputedStyle(el);
   const paddingX = parseFloat(boxStyle.paddingLeft) + parseFloat(boxStyle.paddingRight);
   const availWidth = el.clientWidth - paddingX;
   if (availWidth <= 0) return;
 
-  // Use scrollWidth which reflects natural width even when overflowing
-  const naturalWidth = content.scrollWidth;
-  if (naturalWidth <= availWidth + 1) return; // fits, no scaling
-
-  const scale = Math.max(0.4, availWidth / naturalWidth);
-  content.style.transform = `scaleX(${scale.toFixed(3)})`;
+  // Binary-ish search: shrink font-size in 0.25pt steps until it fits
+  let pt = targetPt;
+  const MIN_PT = 4;
+  let guard = 80;
+  while (content.scrollWidth > availWidth + 0.5 && pt > MIN_PT && guard-- > 0) {
+    pt -= 0.25;
+    el.style.fontSize = pt.toFixed(2) + 'pt';
+  }
 }
 
 function applyAutoFit() {
